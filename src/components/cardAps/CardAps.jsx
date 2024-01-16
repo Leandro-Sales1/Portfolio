@@ -16,10 +16,10 @@ const CardAps = ({corBotao}) =>{
                 <div className="m-4 flex flex-col items-center justify-center gap-4 md:gap-7 lg:gap-10">
                     <h3 className="text-lg text-justify md:text-xl">Sou amante de jogos e tecnologia desde a infância. Com o tempo, tenho me especializado cada vez mais na área de Engenharia de Software. Sendo um profissional bem-humorado, dedicado, organizado e sempre adepto a mudanças. </h3>
                     <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-10">
-                        <a style={{color:'#007bb5'}} className="text-5xl md:text-6xl" href="https://www.linkedin.com/in/leandro-sales1/" target="_blank" rel="noreferrer"><FaLinkedin /></a>
-                        <a className="text-5xl md:text-6xl" href="https://github.com/Leandro-Sales1" target="_blank" rel="noreferrer"> <FaGithub /></a>
+                        <a style={{color:'#007bb5'}} className="text-5xl md:text-6xl" title="Linkedin" href="https://www.linkedin.com/in/leandro-sales1/" target="_blank" rel="noreferrer"><FaLinkedin /></a>
+                        <a className="text-5xl md:text-6xl" href="https://github.com/Leandro-Sales1" title="GitHub" target="_blank" rel="noreferrer"> <FaGithub /></a>
                     </div>
-                    <a className="p-2 border-2 border-black rounded-md md:text-2xl md:p-3" style={{backgroundColor: corBotao}} href="./assets/CurriculoSales.pdf" download={"Curriculo Sales.pdf"} type="application/pdf">Download CV</a>
+                    <a className="p-2 border-2 border-black rounded-md md:text-2xl md:p-3" style={{backgroundColor: corBotao}} href="assets/CurriculoSales.pdf" download={"Curriculo Sales.pdf"} type="application/pdf">Download CV</a>
                 </div>
                 
             </div>
