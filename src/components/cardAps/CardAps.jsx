@@ -8,7 +8,7 @@ import { IoLogoCss3 } from "react-icons/io5";
 const CardAps = ({corBotao}) =>{
     return(
         <section className="flex flex-col items-center justify-center gap-4 md:gap-6 lg:gap-8">
-            <div className="m-4 flex flex-col items-center justify-center  md:grid grid-cols-2 md:items-center md:m-8 lg:w-4/5 lg:m-10">
+            <div className="m-4 flex flex-col items-center justify-center  md:grid grid-cols-2 md:items-center md:m-8 lg:w-2/3 lg:m-10">
                 <div className="flex flex-col items-center justify-center gap-2 md:gap-8">
                     <img className="w-40 h-40 rounded-full  md:w-60 md:h-60" src="/imagens/fotoPrincipal.jpeg" alt="minha foto" />
                     <h1 className="text-center text-3xl md:text-4xl">Olá, sou o Sales, Dev. Front-End.</h1>
