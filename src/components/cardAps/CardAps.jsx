@@ -19,7 +19,7 @@ const CardAps = ({corBotao}) =>{
                         <a style={{color:'#007bb5'}} className="text-5xl md:text-6xl" href="https://www.linkedin.com/in/leandro-sales1/" target="_blank" rel="noreferrer"><FaLinkedin /></a>
                         <a className="text-5xl md:text-6xl" href="https://github.com/Leandro-Sales1" target="_blank" rel="noreferrer"> <FaGithub /></a>
                     </div>
-                    <a className="p-2 border-2 border-black rounded-md md:text-2xl md:p-3" style={{backgroundColor: corBotao}} href="src/assets/CurriculoSales.pdf" download={"Curriculo Sales.pdf"} type="application/pdf">Download CV</a>
+                    <a className="p-2 border-2 border-black rounded-md md:text-2xl md:p-3" style={{backgroundColor: corBotao}} href="./assets/CurriculoSales.pdf" download={"Curriculo Sales.pdf"} type="application/pdf">Download CV</a>
                 </div>
                 
             </div>
