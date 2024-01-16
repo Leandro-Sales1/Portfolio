@@ -1,0 +1,25 @@
+[
+    {
+        "imagem": "/imagens/GreenNet.png",
+        "titulo" : "GreenNet",
+        "descricao": "Projeto realizado para o Challenge FIAP em parceria com a empresa Schneider Electric. Nosso desafio principal foi criar uma rede social interna para seus colaboradores, incentivando a sustentabilidade. Em nossa solução, além do desafio principal, acrescentamos: uma área gameficada e pontuações, uma área direcionada a gestão da aplicação. Fomos selecionados para apresentação no NEXT, onde somente os melhores projetos são apresentados ao público. Tecnologias aplicadas: HMTL, CCS , JS com foco na responsividade e Firebase. E-mail: a Senha: a",
+        "link":"https://green-net-schneider.vercel.app/index.html",
+        "gitHub": "https://github.com/Leandro-Sales1/GreenNet"
+        
+    },
+    {
+        "imagem": "/imagens/Serenatto.jpg",
+        "titulo" : "Serenatto Coffee Shop",
+        "descricao": "Projeto focado em responsividade, onde aprimorei minha habilidades em: HTML, CSS, JS e Bootstrap.",
+        "link":"https://serenatto-steel.vercel.app/",
+        "gitHub": "https://github.com/Leandro-Sales1/Serenatto-"
+        
+    },
+    {
+        "imagem": "/imagens/AluraBooks.jpg",
+        "titulo" : "AluraBooks",
+        "descricao": "Projeto realizado com base em um curso Alura, onde iniciei meus estudos.\nTecnologias aplicadas: HMTL, CCS e JS com foco na responsividade.",
+        "link":"https://alura-book-leandro-sales1.vercel.app/",
+        "gitHub": "https://github.com/Leandro-Sales1/AluraBook"
+    }    
+]
