@@ -1,9 +1,9 @@
 import { useState } from "react"
 import Banner from "./components/banner/Banner"
-import CardAps from "./components/cardAps/cardAps"
+import CardAps from "./components/cardAps/CardAps"
 import Cards from "./assets/Cards.json"
 import Card from "./components/cardProjetos/Card"
-import Rodape from "./components/rodape/rodape"
+import Rodape from "./components/rodape/Rodape"
 
 
 
