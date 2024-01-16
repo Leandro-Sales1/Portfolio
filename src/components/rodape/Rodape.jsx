@@ -11,9 +11,10 @@ const Rodape = ()=>{
             <a style={{color:'#007bb5'}} className="text-4xl" href="https://www.linkedin.com/in/leandro-sales1/" target="_blank" rel="noreferrer"><FaLinkedin /></a>
             <a style={{color:'#25D366'}} className="text-4xl" href=" https://wa.me/5522998209708?text=" target="_blank" rel="noreferrer" ><FaWhatsapp/></a>
             <a className="text-4xl text-white" href="mailto:leandrosales3@gmail.com" target="_blank" rel="noreferrer" ><TbMailForward /></a>
+            </div>
+            <div style={{backgroundColor:'#37373d'}}>
+            <img className="p-6" src="/imagens/rodape.png" alt="rodapé" />
             </div> 
-            <img className="" src="/imagens/rodape.png" alt="rodapé" />
-
 
         </footer>
     )
