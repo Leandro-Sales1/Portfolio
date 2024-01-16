@@ -5,7 +5,7 @@ const Banner = ({corBanner, mudaCorBanner, mudaCorDeFundo, corDeFundo }) =>{
     
     return(
         <header>
-            <section style={{backgroundColor: corBanner } } className="h-20 flex items-center justify-around md:gap-48  ">
+            <section style={{backgroundColor: corBanner } } className="h-20 flex items-center justify-around md:gap-48 lg:gap-96">
                 <img src="/imagens/icone.png" alt="logo do banner"  className="h-16 border-1 border-black rounded-md m-1 "/>
                 <div className="flex align-middle items-center">
                 <div className="text-center m-2 ">

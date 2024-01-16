@@ -11,8 +11,8 @@ const CardProjetos = ({imagem, titulo, descricao, link, gitHub})=>{
                 <h2 className="m-1 pb-1 text-center text-2xl border-b-2 border-white md:m-3 md:pb-3 md:text-3xl">{titulo}</h2>
                 <p className="px-3 text-lg text-justify md:px-5 md:text-xl  ">{descricao}</p>
                 <div className="m-1 p-2 flex items-center justify-around border-t-2 border-white md:m-3 md:p-4">
-                    <a className="text-5xl rounded-lg md:text-6xl" href={link} target="_blank" rel="noopener noreferrer"><FaEye /></a>
-                    <a className="text-5xl rounded-lg md:text-6xl" href={gitHub} target="_blank" rel="noopener noreferrer"><FaGithub/></a>
+                    <a className="text-5xl rounded-lg " href={link} title="Ver a aplicação em tempo real." target="_blank" rel="noopener noreferrer"><FaEye /></a>
+                    <a className="text-5xl rounded-lg " href={gitHub} title="GitHub da aplicação." target="_blank" rel="noopener noreferrer"><FaGithub/></a>
                 </div>
             </div>
         </>
