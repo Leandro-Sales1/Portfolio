@@ -7,3 +7,9 @@ body{
     font-family: 'Noto Sans', sans-serif;
     color: white;
 }
+
+@layer components{
+    .icone{
+       @apply text-5xl md:text-6xl
+    }
+}
