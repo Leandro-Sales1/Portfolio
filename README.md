@@ -7,7 +7,7 @@
 
 https://leandro-sales-portfolio.vercel.app/
 
-![image](https://github.com/Leandro-Sales1/Portfolio/public/imagens/Portfolio.png)
+![image](https://github.com/Leandro-Sales1/Portfolio/blob/main/public/imagens/Portfolio.png)
 
 ## By:
 ### Leandro Sales
