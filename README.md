@@ -1,8 +1,14 @@
-# React + Vite
+# Portfolio
+## Tecnologies used:
+* React.JS
+* VIte
+* TailWind
+* Total focus on responsiveness, with a mobile-first design.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+https://leandro-sales-portfolio.vercel.app/
 
-Currently, two official plugins are available:
+![image](https://github.com/Leandro-Sales1/public/imagens/Portfolio.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## By:
+### Leandro Sales
+### Linkedin: https://www.linkedin.com/in/leandro-sales1/
