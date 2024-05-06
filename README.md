@@ -1,1 +1,14 @@
-Projeto realizado em React Vite e TailWind, com foco em responsividade, aplicando o conceito de Mobile First. Onde a principal finalidade é expor um pouco do meu trabalho em constante evolução.
+# Portfolio
+## Tecnologies used:
+* React.JS
+* VIte
+* TailWind
+* Total focus on responsiveness, with a mobile-first design.
+
+https://leandro-sales-portfolio.vercel.app/
+
+![image](https://github.com/Leandro-Sales1/public/imagens/Portfolio.png)
+
+## By:
+### Leandro Sales
+### Linkedin: https://www.linkedin.com/in/leandro-sales1/
