@@ -11,24 +11,32 @@ import Rodape from "./components/rodape/Rodape"
 const App = () => {
   const [corBanner, setCorBanner] = useState('#5dc1e9')
   const [corDeFundo, setCorDeFundo] = useState('#37373d')
-  document.body.style.backgroundColor=`${corDeFundo}`
-  
+  document.body.style.backgroundColor = `${corDeFundo}`
 
-  function MudaCorBanner(cor){
+
+  function MudaCorBanner(cor) {
     setCorBanner(cor)
   }
-  function MudaCorDeFundo(cor){
+  function MudaCorDeFundo(cor) {
     setCorDeFundo(cor)
-    
+
   }
 
 
   return (
     <>
-      <Banner corBanner={corBanner} mudaCorBanner={MudaCorBanner} mudaCorDeFundo={MudaCorDeFundo} corDeFundo= {corDeFundo}/>
-      <CardAps corBotao={corBanner}/>
-      <Card card={Cards} />
-      <Rodape/>
+      <section className="lg:flex">
+        <div className="lg:flex-col lg:w-1/4" >
+        <Banner corBanner={corBanner} mudaCorBanner={MudaCorBanner} mudaCorDeFundo={MudaCorDeFundo} corDeFundo={corDeFundo} />
+        </div>
+        <div className="lg:flex-col lg:w-3/4 items-end">
+        <CardAps mostrarSecTec={true} mostrarSecTitulo={'lg:hidden'}  corBotao={corBanner} />
+        <Card card={Cards} />
+        <Rodape />
+        </div>
+
+      </section>
+
 
     </>
 

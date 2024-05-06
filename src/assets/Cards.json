@@ -2,7 +2,7 @@
     {
     "imagem": "/imagens/Portfolio.png",
     "titulo" : "Portfólio",
-    "descricao": "Projeto realizado em React Vite e TailWind, com foco em responsividade.",
+    "descricao": "Projeto realizado em React Vite e TailWind, com foco em responsividade, aplicando o conceito de Mobile First. Onde a principal finalidade é expor um pouco do meu trabalho em constante evolução.",
     "link":"https://leandro-sales-portfolio.vercel.app/",
     "gitHub": "https://github.com/Leandro-Sales1/Portfolio"
     
