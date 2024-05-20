@@ -14,7 +14,7 @@ const CardAps = ({ corBotao, mostrarSecTitulo, mostrarSecTec }) => {
                     <h1 className="text-center text-3xl md:text-4xl">Olá, sou o Sales, Dev. Front-End.</h1>
                 </div>
                 <div className="m-4 flex flex-col items-center justify-center gap-4 md:gap-7 lg:gap-10">
-                    <h3 className="text-lg text-justify md:text-xl">Sou amante de jogos e tecnologia desde a infância. Com o tempo, tenho me especializado cada vez mais na área de Engenharia de Software. Sendo um profissional bem-humorado, dedicado, organizado e sempre adepto a mudanças. </h3>
+                    <h3 className="text-lg text-justify md:text-xl lg:w-11/12">Sou amante de jogos e tecnologia desde a infância. Com o tempo, tenho me especializado cada vez mais na área de Engenharia de Software. Sendo um profissional bem-humorado, dedicado, organizado e sempre adepto a mudanças. </h3>
                     <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-10">
                         <a style={{ color: '#007bb5' }} className="icone" title="Linkedin" href="https://www.linkedin.com/in/leandro-sales1/" target="_blank" rel="noreferrer"><FaLinkedin /></a>
                         <a className="icone" href="https://github.com/Leandro-Sales1" title="GitHub" target="_blank" rel="noreferrer"> <FaGithub /></a>
