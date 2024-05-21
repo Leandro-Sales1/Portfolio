@@ -12,4 +12,7 @@ body{
     .icone{
        @apply text-5xl md:text-6xl
     }
+    .icone-sm{
+        @apply text-4xl md:text-5xl
+     }
 }

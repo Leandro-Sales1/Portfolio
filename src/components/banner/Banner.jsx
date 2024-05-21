@@ -3,13 +3,10 @@ import CardAps from "../cardAps/CardAps"
 
 // eslint-disable-next-line react/prop-types
 const Banner = ({ corBanner, mudaCorBanner, mudaCorDeFundo, corDeFundo }) => {
-
-
-
     return (
         <>
-        <section style={{ backgroundColor: corBanner }} className="h-20 flex items-center justify-around md:justify-normal md:gap-0 lg:gap-6 lg:py-8 lg:ml-8 lg:rounded-lg lg:mb-4 lg:flex-col lg:w-full lg:h-max lg:sticky lg:top-10 lg:items-start lg:justify-normal">
-            <div className="flex w-full mx-auto items-center justify-evenly md:gap-48 lg:gap-12">
+        <section style={{ backgroundColor: corBanner }} className="h-20 flex items-center justify-around md:justify-center md:gap-0 lg:gap-6 lg:py-8 lg:mx-auto lg:rounded-lg lg:mb-4 lg:flex-col lg:w-4/5 lg:h-max lg:sticky lg:top-10 lg:items-center lg:border-2 border-solid lg:border-white lg:shadow-md lg:shadow-black">
+            <div className="flex w-full items-center justify-evenly md:gap-48 lg:gap-12">
             <img src="/imagens/icone.png" alt="logo do banner" className="h-16 border-1 border-black rounded-md m-1 " />
             <div className="flex align-middle items-center">
                 <div className="text-center m-2 ">

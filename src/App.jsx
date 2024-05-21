@@ -9,7 +9,7 @@ import Rodape from "./components/rodape/Rodape"
 
 
 const App = () => {
-  const [corBanner, setCorBanner] = useState('#5dc1e9')
+  const [corBanner, setCorBanner] = useState('#3184A5')
   const [corDeFundo, setCorDeFundo] = useState('#37373d')
   document.body.style.backgroundColor = `${corDeFundo}`
 
