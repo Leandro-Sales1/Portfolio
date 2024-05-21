@@ -30,12 +30,11 @@ const App = () => {
         <Banner corBanner={corBanner} mudaCorBanner={MudaCorBanner} mudaCorDeFundo={MudaCorDeFundo} corDeFundo={corDeFundo} />
         </div>
         <div className="lg:flex-col lg:w-3/4 items-end">
-        <CardAps mostrarSecTec={true} mostrarSecTitulo={'lg:hidden'}  corBotao={corBanner} />
+        <CardAps mostrarSecTec mostrarSecTitulo={'lg:hidden'}  corBotao={corBanner} />
         <Card card={Cards} />
-        <Rodape />
         </div>
-
       </section>
+        <Rodape />
 
 
     </>

@@ -1,4 +1,4 @@
-import { FaLinkedin, FaGithub, FaReact, FaHtml5, FaBootstrap, FaFigma, FaNodeJs } from "react-icons/fa";
+import { FaLinkedin, FaAddressCard, FaGithub, FaReact, FaHtml5, FaBootstrap, FaFigma, FaNodeJs } from "react-icons/fa";
 import { SiTypescript, SiJavascript, SiTailwindcss, SiSass } from "react-icons/si"
 import { IoLogoCss3 } from "react-icons/io5";
 
@@ -8,22 +8,23 @@ import { IoLogoCss3 } from "react-icons/io5";
 const CardAps = ({ corBotao, mostrarSecTitulo, mostrarSecTec }) => {
     return (
         <section className="flex flex-col items-center justify-center gap-4 md:gap-6 lg:gap-8">
-            <div className={`m-4 flex flex-col items-center justify-center ${mostrarSecTitulo}`}>
-                <div className="flex flex-col items-center justify-center gap-2 md:gap-8">
+            <div className={`m-4 mb-0 flex flex-col items-center justify-center ${mostrarSecTitulo}`}>
+                <div className="flex flex-col items-center justify-center gap-2 md:gap-4">
                     <img className="w-40 h-40 rounded-full  md:w-60 md:h-60" src="/imagens/fotoPrincipal.jpeg" alt="minha foto" />
-                    <h1 className="text-center text-3xl md:text-4xl">Olá, sou o Sales, Dev. Front-End.</h1>
+                    <h1 className="text-center text-3xl md:text-4xl">Leandro Sales</h1>
+                    <h2 className="p-2 border border-black rounded-md text-sm " style={{ backgroundColor: corBotao }}>Dev. Front-End.</h2>
                 </div>
-                <div className="m-4 flex flex-col items-center justify-center gap-4 md:gap-7 lg:gap-10">
+                <div className="m-4 flex flex-col items-center justify-center gap-8 md:gap-7 lg:gap-10">
                     <h3 className="text-lg text-justify md:text-xl lg:w-11/12">Sou amante de jogos e tecnologia desde a infância. Com o tempo, tenho me especializado cada vez mais na área de Engenharia de Software. Sendo um profissional bem-humorado, dedicado, organizado e sempre adepto a mudanças. </h3>
-                    <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-10">
+                    <div className="flex items-center justify-center gap-12 md:gap-6 lg:gap-10">
                         <a style={{ color: '#007bb5' }} className="icone" title="Linkedin" href="https://www.linkedin.com/in/leandro-sales1/" target="_blank" rel="noreferrer"><FaLinkedin /></a>
                         <a className="icone" href="https://github.com/Leandro-Sales1" title="GitHub" target="_blank" rel="noreferrer"> <FaGithub /></a>
+                        <a className="icone" href="/CurriculoSales.pdf" title="Download CV" download={"Curriculo Sales.pdf"} type="application/pdf"><FaAddressCard /></a>
                     </div>
-                    <a className="p-2 border-2 border-black rounded-md md:text-2xl md:p-3" style={{ backgroundColor: corBotao }} href="/CurriculoSales.pdf" download={"Curriculo Sales.pdf"} type="application/pdf">Download CV</a>
                 </div>
             </div>
 
-            <div className={`m-5 flex flex-col items-center justify-center gap-4 md:gap-6 lg:mt-12 lg:gap-8 ${mostrarSecTec? '' :  'hidden'}`}>
+            <div className={`m-4 flex flex-col items-center justify-center gap-4 md:gap-6 lg:mt-12 lg:gap-8 ${mostrarSecTec ? '' : 'hidden'}`}>
                 <h2 className="text-center text-2xl md:text-3xl">Tecnologias:</h2>
                 <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-8">
                     <FaReact className="icone" title="React" style={{ color: '#61DBFB' }} />
