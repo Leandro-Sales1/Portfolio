@@ -1,11 +1,8 @@
 import { useState } from "react"
 import Banner from "./components/banner/Banner"
 import CardAps from "./components/cardAps/CardAps"
-import Cards from "./assets/Cards.json"
 import Card from "./components/cardProjetos/Card"
 import Rodape from "./components/rodape/Rodape"
-
-
 
 
 const App = () => {
@@ -22,7 +19,6 @@ const App = () => {
 
   }
 
-
   return (
     <>
       <section className="lg:flex">
@@ -31,12 +27,10 @@ const App = () => {
         </div>
         <div className="lg:flex-col lg:w-3/4 items-end">
         <CardAps mostrarSecTec mostrarSecTitulo={'lg:hidden'}  corBotao={corBanner} />
-        <Card card={Cards} />
+        <Card/>
         </div>
       </section>
         <Rodape />
-
-
     </>
 
   )
