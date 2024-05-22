@@ -6,16 +6,16 @@ const Card = () => {
   const [cards, setCards] = useState([]);
 
   useEffect(() => {
-    const fetchCards = async () => {
+    const CarregaCards = async () => {
       try {
         const response = await instance.get('/cards');
         setCards(response.data);
       } catch (error) {
-        console.error('Failed to fetch cards:', error);
+        console.error('Falha em carregar os cards', error);
       }
     };
 
-    fetchCards();
+    CarregaCards();
   }, []);
 
   return (
