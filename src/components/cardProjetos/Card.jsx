@@ -11,7 +11,7 @@ const Card = () => {
         const response = await instance.get('/cards');
         setCards(response.data);
       } catch (error) {
-        console.error('Falha em carregar os cards', error);
+        alert('Ops... Aconteceu algum erro ao carregar os projetos da API. Tente novamente!')
       }
     };
 

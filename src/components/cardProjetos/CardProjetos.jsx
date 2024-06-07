@@ -6,7 +6,7 @@ import { FaEye, FaGithub } from "react-icons/fa";
 const CardProjetos = ({ imagem, titulo, descricao, link, gitHub }) => {
     return (
         <>
-            <div className="mb-4 border-2 border-solid border-white rounded-lg shadow-md shadow-black">
+            <div className="mb-4 border-2 border-solid border-white rounded-lg shadow-md shadow-black bg-[#37373d]">
                 <a target="_blank" href={link} title="Ver o projeto em tempo real." rel="noopener noreferrer">
                     <img className="rounded-md" src={imagem} alt={`imagem do projeto ${titulo}`} />
                 </a>
