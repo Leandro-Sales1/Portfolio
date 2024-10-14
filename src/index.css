@@ -3,16 +3,17 @@
 @tailwind utilities;
 
 
-body{
-    font-family: 'Noto Sans', sans-serif;
-    color: white;
+body {
+  font-family: 'Noto Sans', sans-serif;
+  color: white;
 }
 
-@layer components{
-    .icone{
-       @apply text-5xl md:text-6xl
-    }
-    .icone-sm{
-        @apply text-4xl md:text-5xl
-     }
+@layer components {
+  .icone {
+    @apply text-5xl md:text-6xl
+  }
+
+  .icone-sm {
+    @apply text-4xl md:text-5xl
+  }
 }
