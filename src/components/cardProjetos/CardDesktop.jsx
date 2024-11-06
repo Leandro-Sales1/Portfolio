@@ -9,13 +9,13 @@ const CardDesktop = ({ imagem, titulo, descricao, link, gitHub }) => {
           <p className="card__title font-bold text-xl md:text-2xl">{titulo}</p>
           <p className="card__description text-wrap font-normal text-left text-sm lg:ml-2 2xl:text-lg">{descricao}</p>
           <div className="mt-3">
-            <button className="p-2 rounded-lg 2xl:p-4">
+            <button className="p-2 rounded-lg 2xl:p-3">
               <a href={link}
                 title="Ver o projeto em tempo real."
                 target="_blank"
                 rel="noopener noreferrer">Demonstração</a></button>
             {gitHub ?
-              <button className="p-2 rounded-lg ml-6 2xl:p-4">
+              <button className="p-2 rounded-lg ml-6 2xl:p-3">
                 <a href={gitHub} title="Git hub do projeto"
                   target="_blank"
                   rel="noopener noreferrer">Código</a></button>
