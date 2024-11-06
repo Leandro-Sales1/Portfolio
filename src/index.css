@@ -89,7 +89,7 @@ button:hover::before {
   background-color: white;
   opacity: 1;
   filter: blur(12px);
-  animation: blob-bounce 6s infinite ease;
+  animation: blob-bounce 9s infinite ease;
 }
 
 @keyframes blob-bounce {

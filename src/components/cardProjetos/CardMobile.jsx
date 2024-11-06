@@ -1,4 +1,3 @@
-import { FaEye, FaGithub } from "react-icons/fa";
 
 // eslint-disable-next-line react/prop-types
 const CardMobile = ({ imagem, titulo, descricao, link, gitHub }) => {
@@ -18,17 +17,18 @@ const CardMobile = ({ imagem, titulo, descricao, link, gitHub }) => {
             {descricao}
           </p>
         </div>
-        <div className="m-1 p-2 flex items-center justify-around md:m-3 md:p-4">
-          <a className="icone rounded-lg "
-            href={link}
-            title="Ver o projeto em tempo real."
-            target="_blank"
-            rel="noopener noreferrer"><FaEye /></a>
-
-          <a className={gitHub ? "icone rounded-lg " : "icone rounded-lg text-transparent"}
-            href={gitHub} title={gitHub ? "GitHub do projeto." : null}
-            target="_blank"
-            rel="noopener noreferrer"><FaGithub /></a>
+        <div className="my-3 ml-6">
+          <button className="p-2 rounded-lg">
+            <a href={link}
+              title="Ver o projeto em tempo real."
+              target="_blank"
+              rel="noopener noreferrer">Demonstração</a></button>
+          {gitHub ?
+            <button className="p-2 rounded-lg ml-6">
+              <a href={gitHub} title="Git hub do projeto"
+                target="_blank"
+                rel="noopener noreferrer">Código</a></button>
+            : null}
         </div>
       </div>
     </>

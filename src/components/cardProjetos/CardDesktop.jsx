@@ -15,7 +15,7 @@ const CardDesktop = ({ imagem, titulo, descricao, link, gitHub }) => {
                 target="_blank"
                 rel="noopener noreferrer">Demonstração</a></button>
             {gitHub ?
-              <button className="p-2 rounded-lg ml-4 2xl:p-4">
+              <button className="p-2 rounded-lg ml-6 2xl:p-4">
                 <a href={gitHub} title="Git hub do projeto"
                   target="_blank"
                   rel="noopener noreferrer">Código</a></button>
@@ -24,7 +24,6 @@ const CardDesktop = ({ imagem, titulo, descricao, link, gitHub }) => {
         </div>
       </div>
     </>
-
   )
 }
 

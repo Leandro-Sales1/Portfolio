@@ -35,7 +35,6 @@ const App = () => {
       </section>
       <Rodape />
     </>
-
   )
 }
 

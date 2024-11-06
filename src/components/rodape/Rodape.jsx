@@ -1,7 +1,3 @@
-
-
-
-
 const Rodape = () => {
   return (
     <footer className="">
@@ -10,7 +6,6 @@ const Rodape = () => {
       </div>
     </footer>
   )
-
 }
 
 export default Rodape
