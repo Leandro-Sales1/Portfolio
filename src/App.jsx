@@ -1,27 +1,36 @@
-import { useState } from "react"
-import Banner from "./components/banner/Banner"
+import { useEffect, useState } from "react";
 import CardAps from "./components/cardAps/CardAps"
 import Card from "./components/cardProjetos/Card"
 import Rodape from "./components/rodape/Rodape"
+import Tecnologias from "./components/cardAps/Tecnologias";
 
 
 const App = () => {
-  const [corBanner, setCorBanner] = useState('#3184A5')
+  const [isMobile, setIsMobile] = useState(false);
 
-  function MudaCorBanner(cor) {
-    setCorBanner(cor)
-  }
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
 
   return (
     <>
       <section className="lg:flex bg-gradient-to-b from-[#2C5364] to-[#37373D]" >
         <div className="lg:flex-col lg:w-1/4" >
-          <Banner corBanner={corBanner} mudaCorBanner={MudaCorBanner} />
+          <CardAps />
         </div>
         <div className="lg:flex-col lg:w-3/4 items-end">
-          <CardAps mostrarSecTec mostrarSecTitulo={'lg:hidden'} />
-          <Card />
+          <Tecnologias />
+          <Card isMobile={isMobile} />
         </div>
       </section>
       <Rodape />
