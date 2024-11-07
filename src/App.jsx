@@ -31,9 +31,9 @@ const App = () => {
         <div className="lg:flex-col lg:w-3/4 items-end">
           <Tecnologias />
           <Card isMobile={isMobile} />
+          <Rodape />
         </div>
       </section>
-      <Rodape />
     </>
   )
 }
