@@ -11,7 +11,7 @@ const CardAps = () => {
         </div>
         <div className="mt-2 flex flex-col items-center justify-center">
           <h2 className="font-bold text-center text-xl md:text-2xl">Sobre mim:</h2>
-          <h3 className=" ml-4 text-wrap font-normal text-left text-lg md:ml-6 md:text-xl lg:text-lg lg:ml-4 2xl:text-xl ">Os jogos foram minha porta de entrada para o mundo da tecnologia na infância, despertando minha paixão pela área. Durante o curso de Engenharia de Software, identifiquei-me com o desenvolvimento. Sou um profissional bem-humorado, autodidata, dedicado, organizado, responsável, sempre em busca de novos desafios e adaptável às mudanças.</h3>
+          <h3 className=" ml-4 text-wrap font-normal text-left text-lg md:ml-6 md:text-xl lg:text-lg lg:ml-4 2xl:text-xl ">Sou um desenvolvedor Front-End apaixonado por criar páginas e aplicativos web com design pixel-perfect e mobile-first. Ao longo da minha carreira, tenho me especializado em criar experiências de usuário envolventes e de alta performance, utilizando as mais recentes tecnologias para garantir interfaces limpas, rápidas e responsivas. Com um forte domínio tanto do desenvolvimento Front-End quanto do Back-End, sou proficiente na construção de aplicativos web escaláveis e de alto desempenho.</h3>
         </div>
         <div className="mx-4 mt-4 flex flex-col items-center justify-center gap-8 md:gap-7 lg:gap-10">
           <div className="flex items-center max-w-56 flex-wrap justify-center gap-x-[2.3rem] gap-y-6">
