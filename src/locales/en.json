@@ -1,0 +1,8 @@
+{
+  "aboutMe": "About me:",
+  "text": "As a passionate Front-End Developer, I specialize in creating pixel-perfect, mobile-first web pages and applications, leveraging cutting-edge technologies to build seamless user experiences. With a deep understanding of both front-end and back-end development, I am proficient in designing high-performance, scalable web apps using a combination of MongoDB, Express, React.js, Next.js and, Node.js, among others.",
+  "techs": "Techs:",
+  "projects": "Projects:",
+  "demoButton" : "Demo",
+  "codeButton": "Code"
+}

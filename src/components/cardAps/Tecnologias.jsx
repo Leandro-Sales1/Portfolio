@@ -1,16 +1,18 @@
+/* eslint-disable react/prop-types */
 import { FaReact, FaHtml5, FaBootstrap, FaFigma, FaNodeJs } from "react-icons/fa";
 import { SiTypescript, SiJavascript, SiTailwindcss, SiSass, SiNextdotjs, SiJest, SiCypress, SiRedux, SiGraphql } from "react-icons/si"
 import { IoLogoCss3 } from "react-icons/io5";
 
 
 
-export default function Tecnologias() {
+
+export default function Tecnologias({ text }) {
   return (
     <section className="flex flex-col items-center mt-8">
       <div className="card-tech w-[22rem] h-[16rem] md:w-[36rem] md:h-[19rem] ">
         <div className="bg-tech w-[21.4rem] h-[15.4rem] md:w-[35.4rem] md:h-[18.4rem] ">
           <h2 className="font-bold text-center text-lg md:text-2xl mt-3 md:mt-4">
-            Tecnologias:
+            {text.techs}
           </h2>
           <div className="flex flex-col items-center mt-4 gap-y-3">
             <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-8">

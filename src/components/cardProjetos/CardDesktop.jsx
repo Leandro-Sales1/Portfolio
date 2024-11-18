@@ -1,6 +1,6 @@
+/* eslint-disable react/prop-types */
 
-// eslint-disable-next-line react/prop-types
-const CardDesktop = ({ imagem, titulo, descricao, link, gitHub }) => {
+const CardDesktop = ({ imagem, titulo, descricao, link, gitHub, text }) => {
   return (
     <>
       <div className="card">
@@ -13,12 +13,12 @@ const CardDesktop = ({ imagem, titulo, descricao, link, gitHub }) => {
               <a href={link}
                 title="Ver o projeto em tempo real."
                 target="_blank"
-                rel="noopener noreferrer">Demonstração</a></button>
+                rel="noopener noreferrer">{text.demoButton}</a></button>
             {gitHub ?
               <button className="p-2 rounded-lg ml-6 2xl:p-3">
                 <a href={gitHub} title="Git hub do projeto"
                   target="_blank"
-                  rel="noopener noreferrer">Código</a></button>
+                  rel="noopener noreferrer">{text.codeButton}</a></button>
               : null}
           </div>
         </div>

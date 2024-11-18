@@ -1,6 +1,6 @@
+/* eslint-disable react/prop-types */
 
-// eslint-disable-next-line react/prop-types
-const CardMobile = ({ imagem, titulo, descricao, link, gitHub }) => {
+const CardMobile = ({ imagem, titulo, descricao, link, gitHub, text }) => {
   return (
     <>
       <div className="relative flex  flex-col mx-auto rounded-xl bg-[#26262b] bg-clip-border text-white shadow-md shadow-black w-[21.5rem] mt-12 md:w-[36rem]">
@@ -22,12 +22,12 @@ const CardMobile = ({ imagem, titulo, descricao, link, gitHub }) => {
             <a href={link}
               title="Ver o projeto em tempo real."
               target="_blank"
-              rel="noopener noreferrer">Demonstração</a></button>
+              rel="noopener noreferrer">{text.demoButton}</a></button>
           {gitHub ?
             <button className="p-2 rounded-lg ml-6">
               <a href={gitHub} title="Git hub do projeto"
                 target="_blank"
-                rel="noopener noreferrer">Código</a></button>
+                rel="noopener noreferrer">{text.codeButton}</a></button>
             : null}
         </div>
       </div>
