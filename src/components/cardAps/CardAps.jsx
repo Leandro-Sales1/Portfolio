@@ -38,7 +38,7 @@ const CardAps = ({ isEn, setIsEn, text }) => {
           <button>
             <a href="/CurriculoSales.pdf"
               title="Download CV"
-              download={"Curriculo Sales.pdf"}
+              download={isEn? "ResumeSales.pdf" : "CurriculoSales.pdf"}
               type="application/pdf">Download CV</a>
           </button>
         </div>
