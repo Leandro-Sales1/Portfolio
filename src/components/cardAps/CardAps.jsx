@@ -36,9 +36,9 @@ const CardAps = ({ isEn, setIsEn, text }) => {
         </div>
         <div className="my-6 mx-auto">
           <button>
-            <a href="/CurriculoSales.pdf"
+            <a href={`/${text.linkCV}`}
               title="Download CV"
-              download={isEn? "ResumeSales.pdf" : "CurriculoSales.pdf"}
+              download={text.linkCV}
               type="application/pdf">Download CV</a>
           </button>
         </div>
