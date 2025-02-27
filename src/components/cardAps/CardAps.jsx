@@ -12,8 +12,8 @@ const CardAps = ({ isEn, setIsEn, text }) => {
         style={{ clipPath: "polygon(1.875rem 0%, 100% 0, 100% calc(100% - 1.875rem), calc(100% - 1.875rem) 100%, 0 100%, 0% 1.875rem)" }}>
         <div className="flex flex-col items-center justify-center gap-2 md:gap-4">
           <div className="flex ml-16 md:ml-40 lg:ml-12 2xl:ml-20">
-            <img className="mt-7 ml-2 w-40 h-40 object-cover object-top rounded-full shadow-sm shadow-black md:w-56 md:h-56"
-              src="/imagens/fotoPrincipal.jpg" alt="minha foto" />
+            <img className="mt-7 ml-2 w-40 h-40 object-cover object-center rounded-full shadow-sm shadow-black md:w-56 md:h-56"
+              src="/imagens/fotoPrincipal.jpeg" alt="minha foto" />
             <div className="btn-container -ml-10 mt-1 md:ml-12 md:mt-4 lg:-ml-14 lg:mt-2 2xl:-ml-8">
               <label className="switch btn-color-mode-switch">
                 <input onChange={handleLang} value='1' id="color_mode" name="color_mode" type="checkbox" />
