@@ -6,7 +6,7 @@ import { IoLogoCss3 } from "react-icons/io5";
 
 
 
-export default function Tecnologias({ text }) {
+export default function Techs({ text }) {
   return (
     <section className="flex flex-col items-center mt-8">
       <div className="card-tech w-[22rem] h-[16rem] md:w-[36rem] md:h-[19rem] ">

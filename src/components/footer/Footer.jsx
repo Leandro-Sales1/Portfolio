@@ -1,4 +1,4 @@
-const Rodape = () => {
+const Footer = () => {
   return (
     <footer>
       <div className="">
@@ -8,4 +8,4 @@ const Rodape = () => {
   )
 }
 
-export default Rodape
+export default Footer;

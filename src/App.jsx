@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import CardAps from "./components/cardAps/CardAps"
-import Card from "./components/cardProjetos/Card"
-import Rodape from "./components/rodape/Rodape"
-import Tecnologias from "./components/cardAps/Tecnologias";
+import Card from "./components/cardProjects/Card"
+import Rodape from "./components/footer/Footer"
+import Techs from "./components/cardAps/Techs";
 import pt from "./locales/pt.json";
 import en from "./locales/en.json";
+import { BackgroundBeams } from "./components/ui/BackGroundBeans";
 
 
 const App = () => {
@@ -29,16 +30,16 @@ const App = () => {
 
   return (
     <>
-      <section className="lg:flex bg-gradient-to-b from-[#2C5364] to-[#37373D]" >
+      <BackgroundBeams className="lg:flex bg-gradient-to-b from-[#2C5364] to-[#37373D]" >
         <div className="lg:flex-col lg:w-1/4" >
           <CardAps text={currentLanguage} isEn={isEn} setIsEn={setIsEn} />
         </div>
         <div className="lg:flex-col lg:w-3/4 items-end">
-          <Tecnologias text={currentLanguage} />
+          <Techs text={currentLanguage} />
           <Card isMobile={isMobile} text={currentLanguage} isEn={isEn} />
           <Rodape />
         </div>
-      </section>
+      </BackgroundBeams>
     </>
   )
 }
