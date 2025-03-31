@@ -5,7 +5,6 @@ import Rodape from "./components/footer/Footer"
 import Techs from "./components/cardAps/Techs";
 import pt from "./locales/pt.json";
 import en from "./locales/en.json";
-import { BackgroundBeams } from "./components/ui/BackGroundBeans";
 
 
 const App = () => {
@@ -30,7 +29,7 @@ const App = () => {
 
   return (
     <>
-      <BackgroundBeams className="lg:flex bg-gradient-to-b from-[#2C5364] to-[#37373D]" >
+      <section className="lg:flex bg-gradient-to-b from-[#2C5364] to-[#37373D]" >
         <div className="lg:flex-col lg:w-1/4" >
           <CardAps text={currentLanguage} isEn={isEn} setIsEn={setIsEn} />
         </div>
@@ -39,7 +38,7 @@ const App = () => {
           <Card isMobile={isMobile} text={currentLanguage} isEn={isEn} />
           <Rodape />
         </div>
-      </BackgroundBeams>
+      </section>
     </>
   )
 }
