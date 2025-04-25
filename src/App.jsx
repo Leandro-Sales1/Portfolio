@@ -31,7 +31,7 @@ const App = () => {
   return (
     <>
       <section className="lg:flex h-full bg-gradient-to-b from-[#2C5364] to-[#37373D]" >
-        <Bg3D />
+        <Bg3D isMobile={isMobile} />
         <div className="lg:flex-col lg:w-1/4" >
           <CardAps text={currentLanguage} isEn={isEn} setIsEn={setIsEn} />
         </div>

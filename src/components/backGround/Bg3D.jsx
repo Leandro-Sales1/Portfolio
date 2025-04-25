@@ -1,20 +1,21 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable react/no-unknown-property */
 
 import { Canvas } from "@react-three/fiber";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 
-export default function Scene3D() {
+export default function Scene3D({isMobile}) {
   return (
     <div className="absolute top-0 w-full h-[573%] lg:h-[205%]">
       <Canvas>
-        <ParticlesCircle />
+        <ParticlesCircle isMobile={isMobile} />
       </Canvas>
     </div>
   );
 }
 
-function ParticlesCircle() {
+function ParticlesCircle({isMobile}) {
   const myMesh = useRef({});
 
   useFrame((_, delta) => {
@@ -25,11 +26,11 @@ function ParticlesCircle() {
   });
 
   return (
-    <points ref={myMesh}  rotation={[1, 5, 0]} scale={3.3}>
+    <points ref={myMesh} rotation={[1, 5, 0]} scale={3.3}>
       <sphereGeometry args={[1, 68, 68]} />
       <pointsMaterial
         color="white"
-        size={0.005}
+        size={isMobile ? 0.003 : 0.005}
         sizeAttenuation={true}
         opacity={0.2}
       />
