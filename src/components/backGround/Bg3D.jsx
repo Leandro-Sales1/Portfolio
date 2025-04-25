@@ -30,7 +30,7 @@ function ParticlesCircle({isMobile}) {
       <sphereGeometry args={[1, 68, 68]} />
       <pointsMaterial
         color="white"
-        size={isMobile ? 0.003 : 0.005}
+        size={isMobile ? 0.002 : 0.005}
         sizeAttenuation={true}
         opacity={0.2}
       />
