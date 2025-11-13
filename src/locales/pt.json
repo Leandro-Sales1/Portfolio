@@ -1,9 +1,9 @@
 {
   "aboutMe": "Sobre mim:",
-  "text": "Desenvolvedor Front-End especializado em criar experiências envolventes e de alta performance, utilizo as mais recentes tecnologias para garantir aplicações rápidas, responsivas e escaláveis, com domínio tanto no Front-End quanto no Back-End.",
+  "text": "Sou especialista em front-end com foco em React, Next.js e TypeScript. Uno a disciplina e foco da formação militar com resultados técnicos em engenharia de software. Essa combinação me ensinou a manter a constância mesmo sob pressão e entregando soluções de alta performance, sem abrir mão da colaboração e da qualidade.",
   "techs": "Tecnologias:",
   "projects": "Projetos:",
-  "demoButton" : "Demonstração",
+  "demoButton": "Demonstração",
   "codeButton": "Código",
   "linkCV": "CurriculoSales.pdf"
 }

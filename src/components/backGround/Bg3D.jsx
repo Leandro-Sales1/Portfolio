@@ -7,7 +7,7 @@ import { useRef } from "react";
 
 export default function Scene3D({isMobile}) {
   return (
-    <div className="absolute top-0 w-full h-[573%] lg:h-[205%]">
+    <div className="absolute top-0 w-full h-[695vh] sm:h-[380vh] lg:h-[142vh] 2xl:h-[176vh]">
       <Canvas>
         <ParticlesCircle isMobile={isMobile} />
       </Canvas>
