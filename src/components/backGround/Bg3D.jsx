@@ -5,9 +5,22 @@ import { Canvas } from "@react-three/fiber";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 
-export default function Scene3D({isMobile}) {
+function getHeightMultiplier(viewportWidth) {
+  if (!viewportWidth || viewportWidth >= 1536) return 1.76;
+  if (viewportWidth >= 1024) return 1.42;
+  if (viewportWidth >= 640) return 3.8;
+  return 5.7;
+}
+
+export default function Bg3D({ isMobile, viewportHeight = 0, viewportWidth = 0 }) {
+  const multiplier = getHeightMultiplier(viewportWidth);
+  const heightPx = viewportHeight > 0 ? Math.round(viewportHeight * multiplier) : null;
+  const style = heightPx != null
+    ? { height: `${heightPx}px`, width: viewportWidth > 0 ? `${viewportWidth}px` : "100%" }
+    : { minHeight: "100vh", width: "100%" };
+
   return (
-    <div className="absolute top-0 w-full h-[570vh] sm:h-[380vh] lg:h-[142vh] 2xl:h-[176vh]">
+    <div className="absolute top-0 left-0" style={style}>
       <Canvas>
         <ParticlesCircle isMobile={isMobile} />
       </Canvas>
