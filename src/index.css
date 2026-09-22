@@ -2,257 +2,159 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
+/*
+ * CSS global. Regra desta base: só entra aqui o que o Tailwind não expressa.
+ *
+ * Removido no redesign (não reintroduzir):
+ * - o bloco global `button { ... }` — pegava TODO <button> do app, independente de
+ *   classe, e era o motivo de os botões novos saírem errados: `button:hover`
+ *   (0,1,1) vencia `text-black` (0,1,0), deixando texto quase branco sobre fundo
+ *   quase branco no hover; e `button::before` (0,0,2) com `z-index: -1` dentro do
+ *   contexto de empilhamento criado pelo próprio `position: relative; z-index: 1`
+ *   do botão pintava ACIMA do fundo.
+ * - `.card` / `.card__image` / `.card__content` (flip card), `.card-tech` /
+ *   `.bg-tech` / `.blob` / `@keyframes blob-bounce`, `.btn-container` /
+ *   `.btn-color-mode-switch*`, `.icone` / `.icone-sm`.
+ * - `.text-balance` — é utility nativa do Tailwind 3.4, a regra era redundante.
+ * - `#root { overflow-x: hidden }` — overflow em #root quebra `position: sticky`
+ *   no futuro; `overflow-x-hidden` vive na classe do <body>.
+ *
+ * ARMADILHA DA CASCATA (Tailwind 3): o CSS compilado é plano — `@layer` aparece
+ * 0 vezes na saída. A ordem é base → components → utilities não-prefixadas →
+ * regras custom → utilities responsivas (md:/lg:/2xl:). Logo, regra custom vence
+ * utility não-prefixada, mas PERDE para a responsiva. Nunca conte com uma classe
+ * daqui para sobrepor `md:text-6xl`.
+ */
+
+:root {
+  --accent: #f97316;
 }
+
+/* ---------------------------------- Base ---------------------------------- */
 
 html {
-  width: 100%;
+  /* Só com movimento permitido: para quem pediu redução, o salto seco é o correto. */
+  scroll-behavior: smooth;
+  /* Compensa a nav do Hero se ela virar sticky. */
+  scroll-padding-top: 1.5rem;
 }
 
-body {
-  font-family: 'Noto Sans', sans-serif;
-  color: white;
-  width: 100%;
-  min-height: 100vh;
-}
-
-#root {
-  width: 100%;
-  min-height: 100%;
-  overflow-x: hidden;
-}
-
-@layer components {
-  .icone {
-    @apply text-5xl hover:text-black md:text-6xl
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 
-  .icone-sm {
-    @apply text-4xl hover:text-black md:text-5xl
+  /* As animações de entrada vêm do tailwind.config.js. Neutralizadas aqui em vez
+     de deixar o conteúdo invisível: os elementos têm opacidade natural 1 (o
+     `opacity-0` saiu do JSX justamente por isso), então `animation: none` mostra
+     tudo. `!important` é legítimo neste caso — é acessibilidade. */
+  .animate-fade-in,
+  .animate-flow,
+  .animate-pulse {
+    animation: none !important;
   }
 }
 
-button {
-  padding: 10px 20px;
-  border-radius: 16px;
-  color: #000;
-  z-index: 1;
-  background: #e8e8e8;
-  position: relative;
-  font-weight: 1000;
-  font-size: 17px;
-  -webkit-box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
-  box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
-  transition: all 250ms;
-  overflow: hidden;
-  border: 1px solid black;
+/* Altura do Hero. `svh` é a MENOR viewport: o hero não redimensiona quando a
+   barra de URL do mobile aparece/some — que era o motivo de o portfólio antigo
+   fazer pinning de altura via JS/visualViewport. `min-h-svh` NÃO existe no
+   Tailwind 3.4.19 (o token `svh` só aparece em dataTypes.js), daí o CSS.
+   Sem suporte a svh, o `min-h-screen` do JSX assume. */
+@supports (min-height: 100svh) {
+  .hero-vh {
+    min-height: 100svh;
+  }
 }
 
-button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 0;
-  border-radius: 16px;
-  background-color: #000;
-  z-index: -1;
-  -webkit-box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
-  box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
-  transition: all 250ms
-}
+/* ------------------------- Painel de calibração ---------------------------- */
 
-button:hover {
-  color: #e8e8e8;
-  background-color: #000;
-  border: 1px solid white;
-}
+/* Sem isto o painel fica com o slider nativo do navegador em cada plataforma. */
 
-button:hover::before {
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
+  background: transparent;
 }
 
-.card-tech {
-  position: relative;
-  border-radius: 14px;
-  z-index: 1111;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 2px;
+  cursor: pointer;
+  background: #27272a;
+  border-radius: 1px;
 }
 
-.bg-tech {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  z-index: 2;
-  background: #26262b;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.blob {
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  left: 50%;
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  margin-top: -6px;
+  background: #ffffff;
+  border: 1px solid #27272a;
   border-radius: 50%;
-  background-color: white;
-  opacity: 1;
-  filter: blur(12px);
-  animation: blob-bounce 9s infinite ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease, background 0.2s ease;
 }
 
-@keyframes blob-bounce {
-  0% {
-    transform: translate(-100%, -100%) translate3d(0, 0, 0);
-  }
-
-  25% {
-    transform: translate(-100%, -100%) translate3d(100%, 0, 0);
-  }
-
-  50% {
-    transform: translate(-100%, -100%) translate3d(100%, 100%, 0);
-  }
-
-  75% {
-    transform: translate(-100%, -100%) translate3d(0, 100%, 0);
-  }
-
-  100% {
-    transform: translate(-100%, -100%) translate3d(0, 0, 0);
-  }
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
 }
 
-
-.card {
-  position: relative;
-  aspect-ratio: 16/9;
-  background-color: #f2f2f2;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  perspective: 1000px;
-  box-shadow: 0 0 0 5px #26262b;
-  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(0.95);
 }
 
-.card__image {
+input[type="range"]::-moz-range-track {
   width: 100%;
-  height: 100%;
-}
-
-.card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 16px black;
-}
-
-.card__content {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-  background-color: #26262b;
-  transform: rotateX(-90deg);
-  transform-origin: bottom;
-  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.card:hover .card__content {
-  transform: rotateX(0deg);
-}
-
-.btn-container {
-  display: table-cell;
-  vertical-align: middle;
-  text-align: center;  
-}
-
-.btn-color-mode-switch {
-  display: inline-block;
-  margin: 0px;
-  position: relative;
-}
-
-.btn-color-mode-switch > label.btn-color-mode-switch-inner {
-  width: 115px;
-  height: 30px;
-  background-color: #3184A5;
-  border-radius: 26px;
-  overflow: hidden;
-  position: relative;
-  transition: all 0.3s ease;
-  display: block;
+  height: 2px;
   cursor: pointer;
+  background: #27272a;
+  border-radius: 1px;
 }
 
-.btn-color-mode-switch > label.btn-color-mode-switch-inner:before {
-  content: attr(data-on);
-  position: absolute;
-  font-size: 16px;
-  font-weight: 600;
-  top: 3px;
-  right: 20px;
-  color: #222;
+input[type="range"]::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  background: #ffffff;
+  border: 1px solid #27272a;
+  border-radius: 50%;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.btn-color-mode-switch > label.btn-color-mode-switch-inner:after {
-  content: attr(data-off);
-  width: 45px;
-  height: 25px;
-  background: #fff;
-  border-radius: 26px;
-  position: absolute;
-  font-size: 16px;
-  display: flex;
-  justify-content: center;
-  left: 2px;
-  top: 3px;
-  text-align: center;
-  transition: all 0.3s ease;
-  box-shadow: 0px 0px 6px -2px #111;
-  padding: 2px 0px;
-  color: #222;
-  font-weight: 600;
-  cursor: pointer;
+input[type="range"]:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 4px;
 }
 
-.btn-color-mode-switch input[type="checkbox"] {
-  cursor: pointer;
-  width: 50px;
-  height: 25px;
-  opacity: 0;
-  position: absolute;
-  top: 0;
-  z-index: 1;
-  margin: 0px;
+/* ------------------------------- Utilitários ------------------------------- */
+
+/* Painel de vidro (painel de calibração, chips sobre imagem). */
+.tech-glass {
+  background: rgba(9, 9, 11, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.5);
 }
 
-.btn-color-mode-switch input[type="checkbox"]:checked + label.btn-color-mode-switch-inner {
-  background-color: #3184A5;
+/* Grade técnica de fundo, desvanecendo nas bordas. */
+.grid-overlay {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
 }
 
-.btn-color-mode-switch input[type="checkbox"]:checked + label.btn-color-mode-switch-inner:after {
-  content: attr(data-on);
-  left: 68px;
+/* Fundo da seção de contato. */
+.bg-mesh {
+  background-image:
+    radial-gradient(at 40% 20%, rgba(249, 115, 22, 0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(249, 115, 22, 0.05) 0px, transparent 50%);
 }
-
-.btn-color-mode-switch input[type="checkbox"]:checked + label.btn-color-mode-switch-inner:before {
-  content: attr(data-off);
-  right: auto;
-  left: 20px;
-}
-

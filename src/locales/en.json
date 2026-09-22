@@ -5,5 +5,32 @@
   "projects": "Projects:",
   "demoButton": "Demo",
   "codeButton": "Code",
-  "linkCV": "Leandro_Sales_Fullstack_Developer.pdf"
+  "linkCV": "Leandro_Sales_Fullstack_Developer.pdf",
+
+  "role": "Front-end Developer",
+  "heroTagline": "Discipline and performance.",
+  "heroSubline": "I am a front-end specialist focused on React, Next.js, and TypeScript.",
+  "downloadCV": "Download CV",
+
+  "navAbout": "About",
+  "navTechs": "Techs",
+  "navProjects": "Projects",
+  "navContact": "Contact",
+  "navTitle": "Navigation",
+
+  "projectsLoading": "Loading projects…",
+  "projectsError": "Couldn't load the projects right now.",
+  "projectsEmpty": "No projects found.",
+  "retry": "Try again",
+  "demoTitle": "View the live project.",
+
+  "aboutCard1Title": "Specialized front-end",
+  "aboutCard1Text": "React, Next.js, and TypeScript are the foundation of my work, from component to deploy.",
+  "aboutCard2Title": "Military-trained discipline",
+  "aboutCard2Text": "Military training taught me method and focus: a deadline is a commitment, not an estimate.",
+  "aboutCard3Title": "Consistency under pressure",
+  "aboutCard3Text": "I deliver high-performance solutions without compromising collaboration or code quality.",
+
+  "contactTitle": "Let's talk?",
+  "contactSubtitle": "I work with collaboration and quality from start to finish. If you have a project or a role in mind, get in touch."
 }
