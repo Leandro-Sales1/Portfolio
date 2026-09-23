@@ -212,11 +212,15 @@ export const viewportBudget = (width, height, { hasPointer = true, devicePixelRa
  * do eixo, onde ela é igual a `usedPx` com erro de 0,001px. Ou seja: a elipse fica tangente ao
  * círculo reservado na direção radial e dentro dele na tangencial.
  *
- * As ÓRBITAS — a tinta que o olho lê como a esfera — são desenhadas com raio exatamente `ρ`
- * (a escala é `ρ / ORBIT_RADIUS`), então ficam DENTRO da envolvente por construção e enchem o
- * círculo reservado: medido projetando os pontos das 3 órbitas ao longo de 48 rotações do grupo
- * e da varredura de `rotation.z`, elas batem 99–100% de `usedPx` em todos os 9 viewports
- * testados. A correção garante o limite sem encolher a esfera.
+ * As ÓRBITAS têm este círculo como REFERÊNCIA (`ORBIT_RADIUS` de mundo = `usedPx` em tela) e desde
+ * 2026-09-23 são desenhadas 10% ALÉM dele, na envolvente do pior caso da nuvem — a pedido do dono
+ * ("gostaria que as órbitas ficassem em 110%, pois tem espaço na tela para isso"), porque em 100%
+ * os três anéis ficavam na borda da bola, e a bola é a régua que ele aprovou. Elas continuam dentro
+ * do que a correção garante — um anel de raio de mundo `R` está sobre a casca da esfera de raio `R`,
+ * e a imagem da esfera é a região desta silhueta. Medido projetando os pontos das 3 órbitas ao longo
+ * de 60 rotações do grupo nos viewports do `DESIGN.md`, o anel de fora fica 0–2px DENTRO da
+ * envolvente que o `radiusWithinGap` garante, nunca além: é essa coincidência que faz do `cloudRatio`
+ * o teto do `ORBIT_ENVELOPE_RATIO` lá no `ThreeCanvas`.
  *
  * @param {{usedPx: number, fPx: number, distance: number, offsetPx?: number}} args
  *        `usedPx` é o vão livre reservado (px), `offsetPx` a distância do centro do vão ao
@@ -250,17 +254,18 @@ export const envelopeWorldRadius = ({ usedPx, fPx, distance, offsetPx = 0 }) => 
 };
 
 /**
- * Maior raio reservado cuja NUVEM ainda não cruza o obstáculo mais próximo.
+ * Maior raio reservado cuja TINTA toda ainda não cruza o obstáculo mais próximo.
  *
- * POR QUE ISTO EXISTE. O círculo que o vão reserva é a régua das ÓRBITAS, mas a tinta que o
- * olho lê como esfera não é só ela: a nuvem de pontos cresce com o slider "Flux Dynamics" e
- * recebe ainda o empurrão do mouse, então no extremo do slider o raio LOCAL dela chega a
- * `cloudRatio` vezes o das órbitas. Quem absorve esse excesso é a folga de `marginPx` — que é
- * ABSOLUTA (16px de respiro + 8px de animação + a paralaxe, ~h/45). Como o excesso é
- * RELATIVO (proporcional ao raio) e a folga é absoluta, eles só se cobrem enquanto a esfera
- * é pequena, e o teto é `folga / (cloudRatio − 1)`: medido, com o `cloudRatio` em 1,10 (o de
- * hoje) isso dá 10× a folga, e a nuvem só cruzaria o texto ou o painel no extremo do slider
- * numa tela de 8K — e "sem sobreposição" é a restrição dura do dono. Aqui o raio cede.
+ * POR QUE ISTO EXISTE. O círculo que o vão reserva é a régua da bola em REPOUSO, e a tinta que o
+ * olho lê como esfera passa dele por dois motivos. O primeiro é a nuvem de pontos: ela cresce com o
+ * slider "Flux Dynamics" e recebe ainda o empurrão do mouse, então no extremo do slider o raio
+ * LOCAL dela chega a `cloudRatio` vezes o das órbitas. O segundo são as PRÓPRIAS ÓRBITAS, que desde
+ * 2026-09-23 são desenhadas 110% além do círculo (ver `envelopeWorldRadius`). Quem absorve esse
+ * excesso é a folga de `marginPx` — que é ABSOLUTA (16px de respiro + 8px de animação + a paralaxe,
+ * ~h/45). Como o excesso é RELATIVO (proporcional ao raio) e a folga é absoluta, eles só se cobrem
+ * enquanto a esfera é pequena, e o teto é `folga / (cloudRatio − 1)`: medido, com o `cloudRatio` em
+ * 1,10 (o de hoje) isso dá 10× a folga, e a tinta só cruzaria o texto ou o painel no extremo do
+ * slider numa tela de 8K — e "sem sobreposição" é a restrição dura do dono. Aqui o raio cede.
  *
  * A CONTA, sem inversa. `envelopeWorldRadius` (`h`) é crescente no raio reservado, então
  * "a silhueta da nuvem termina antes do obstáculo" — `h⁻¹(cloudRatio · h(usedPx)) <=
@@ -270,10 +275,19 @@ export const envelopeWorldRadius = ({ usedPx, fPx, distance, offsetPx = 0 }) => 
  * projeção fora do eixo é uma elipse alongada na direção radial), então medir o obstáculo
  * em 2D contra ela é conservador — nunca deixa passar.
  *
- * QUANDO NÃO MUDA NADA. Na imensa maioria das telas a nuvem cabe e a função devolve o
+ * QUANDO NÃO MUDA NADA. Na imensa maioria das telas a tinta cabe e a função devolve o
  * `ceilingPx` intacto: a composição aprovada no telefone, no tablet e no desktop sai
- * idêntica. Ela só morde onde a alternativa seria a nuvem encostar em algo — e é por isso
- * que a régua do tamanho continua sendo o vão e as órbitas, não a nuvem.
+ * idêntica. Ela só morde onde a alternativa seria a tinta encostar em algo — e é por isso
+ * que a régua do tamanho continua sendo o vão.
+ *
+ * O QUE ISTO **NÃO** COBRE, e é bom que esteja escrito: o `obstaclePx` que chega aqui é o
+ * `obstacle` do `freeSpot.js`, que mede a distância ao RETÂNGULO mais próximo e ignora as bordas do
+ * container. A garantia é contra o CONTEÚDO (texto, nav, logo, painel), não contra a moldura do
+ * hero. Em toda viewport medida o ponto escolhido vem da busca centrada, que não encosta em borda
+ * nenhuma — mas no caminho do PLANO B (o maior vão, por definição encostado numa borda) a
+ * envolvente de 110% passa da borda e é cortada pelo `overflow-hidden` da seção, por algumas
+ * dezenas de px em tela larga. É corte de um fio de linha num caso que hoje não é alcançado — a
+ * nuvem no topo do slider já fazia o mesmo ali —, e não sobreposição a nada.
  *
  * E ELA É ALCANÇÁVEL PELO `cloudRatio`: `!(cloudRatio > 1)` faz a função voltar intacta, e o
  * teto `folga / (cloudRatio − 1)` cresce sem limite quando o `cloudRatio` desce para 1. Foi
@@ -287,7 +301,8 @@ export const envelopeWorldRadius = ({ usedPx, fPx, distance, offsetPx = 0 }) => 
  *        `ceilingPx` é o raio que o vão (e o teto) permitem; `obstaclePx` é a distância ao
  *        obstáculo mais próximo — o `obstacle` devolvido pelas buscas do `freeSpot.js`;
  *        `cloudRatio` é o raio máximo da nuvem em mundo LOCAL dividido pelo raio das
- *        órbitas (contrato com o shader, ver `ThreeCanvas.jsx`).
+ *        órbitas (contrato com o shader, ver `ThreeCanvas.jsx`) — e, por ser a envolvente em que as
+ *        órbitas são desenhadas, é também o teto do `ORBIT_ENVELOPE_RATIO` de lá.
  * @returns {number} raio reservado, em px (0 se não couber nada)
  */
 export const radiusWithinGap = ({

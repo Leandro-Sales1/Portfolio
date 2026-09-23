@@ -79,10 +79,12 @@ const makeSampler = (width, height, occupiedRects, margin) => {
     // DOIS NÚMEROS, não um. `radius` é o maior círculo livre (o que o vão dá). `obstacle`
     // é só a distância até o retângulo mais próximo, na mesma régua (`margin` somada),
     // ignorando as bordas do container — e existe porque nem toda tinta da esfera cabe
-    // no círculo reservado: a NUVEM cresce com o slider de distorção e passa dele. Quem
-    // precisa saber onde o obstáculo está, e não só onde o vão termina, é o teto da
-    // nuvem (`radiusWithinGap`, no `screenBudget.js`). `Infinity` quando não há nenhum
-    // retângulo: aí não há obstáculo, e o vão é limitado só pelas bordas.
+    // no círculo reservado: a NUVEM cresce com o slider de distorção e as ÓRBITAS são
+    // desenhadas 110% além dele. Quem precisa saber onde o obstáculo está, e não só onde
+    // o vão termina, é o teto da tinta (`radiusWithinGap`, no `screenBudget.js`) — que
+    // por isso garante contra o CONTEÚDO, não contra as bordas (ver a nota lá).
+    // `Infinity` quando não há nenhum retângulo: aí não há obstáculo, e o vão é
+    // limitado só pelas bordas.
     return { x, y, radius, obstacle: obstacle + margin };
   };
 };

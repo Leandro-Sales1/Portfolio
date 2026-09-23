@@ -21,6 +21,14 @@ const SLIDERS = [
   // número é o que torna a folga barata e deixa as ÓRBITAS maiores. Ver `CLOUD_BASE_RADIUS`,
   // `CURSOR_PUSH` e `SLIDER_MAX_DISTORTION` no ThreeCanvas.jsx — os três andam juntos, e o
   // padrão 0,6 fica a 75% da pista (mexer aqui mexe nos três).
+  //
+  // E MEXE NAS ÓRBITAS EM DOIS SENTIDOS, um deles direto. O indireto é o de cima (folga → círculo
+  // → anéis). O direto é novo, de 2026-09-23: as órbitas são desenhadas em
+  // `ORBIT_ENVELOPE_RATIO · ORBIT_RADIUS`, e o `ORBIT_ENVELOPE_RATIO` é DERIVADO do
+  // `CLOUD_MAX_RATIO` — não é um número escolhido, é o teto da guarda. Logo, baixar este topo
+  // ENCOLHE os três anéis junto com a envolvente que os define, e subir afasta os anéis mas
+  // engorda o excesso relativo da nuvem, fazendo a guarda morder mais em tela larga (o círculo
+  // cede). É o mesmo diálogo de sempre, agora com as órbitas do lado de dentro dele.
   { key: "distortion", min: 0, max: 0.8, step: 0.1, showValue: true },
   { key: "detail", min: 0.1, max: 2.0, step: 0.1, showValue: true },
   { key: "speed", min: 0, max: 0.5, step: 0.01, showValue: false },

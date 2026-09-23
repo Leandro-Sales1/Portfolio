@@ -305,10 +305,12 @@ tela** onde ainda caiba um círculo que não perca mais de 20% do maior vão liv
    `className`, ele não pertencia ali).
 6. Se o círculo escolhido tiver menos de `floorRadiusPx` de raio, o grupo fica invisível
    (`systemsGroup.visible = false`) em vez de virar um ponto perdido no meio da tela.
-7. O raio do vão é a régua das **órbitas**. A **nuvem** de pontos é maior que elas no extremo
-   do slider de distorção, e o `radiusWithinGap` (`src/utils/screenBudget.js`) confere se ela
-   ainda cabe no mesmo lugar: onde cabe — praticamente toda tela — devolve o teto do vão
-   intacto, e onde não cabe o raio cede. Ver "A nuvem de pontos no extremo do slider".
+7. O raio do vão é a régua da **bola em repouso** (o círculo reservado). Duas tintas passam dele:
+   as **órbitas**, desenhadas 110% além desde 2026-09-23 (`ORBIT_ENVELOPE_RATIO`, ver "As órbitas"),
+   e a **nuvem** de pontos no extremo do slider de distorção. O `radiusWithinGap`
+   (`src/utils/screenBudget.js`) confere se a tinta toda ainda cabe no mesmo lugar: onde cabe —
+   praticamente toda tela — devolve o teto do vão intacto, e onde não cabe o raio cede. Ver
+   "A nuvem de pontos no extremo do slider".
 
 ### A troca entre tamanho e centro, e por que ela é explicada (não escolhida por gosto)
 
@@ -336,7 +338,9 @@ Medido no DOM real, com o par `hasPointer`:
 | 2560×1320 (a janela real do dono) | (1280, 660) | ∅806 em (1156, 459) | ∅688 em (1284, 532) — 50% da largura |
 
 São **diâmetros do círculo reservado**, do DOM real (não de caixas sintéticas), e a tinta que o
-olho vê é a das órbitas, que enchem esse círculo por construção. A coluna "maior vão" é o que a
+olho vê é a da nuvem em repouso, que desenha esse círculo exatamente (100% dele) — as órbitas, que
+são o mesmo que se lê como esfera, vão 10% além desde 2026-09-23 (ver "As órbitas"). A coluna
+"maior vão" é o que a
 esfera fazia antes: note que ela é **tangente à borda de cima** em 1409×804 (`y = raio`, por
 definição) e em 1264×704 cai 169px abaixo do centro. O ganho de centralização varia muito com a
 tela: em 1264×704 os 20% de raio compram 72% da distância até o centro, em 1409×804 compram 27%,
@@ -419,10 +423,12 @@ A esfera de raio `ρ` a uma distância axial `d` desenha a silhueta `fPx · ρ /
 **tangente**, não a projeção do ponto mais próximo dela. Medir o polo próximo (`d − ρ`) foi o
 que deixou a esfera desenhando **63% (desktop) a 72% (mobile)** do vão que ela reservava: quase
 metade do ganho de tamanho veio de corrigir a conta, não de rearranjar o layout. A inversão é
-`envelopeWorldRadius` (`src/utils/screenBudget.js`); aqui a órbita é desenhada com raio `ρ` (a
-escala é `ρ / ORBIT_RADIUS`, com `ORBIT_RADIUS = 6.0` **constante**), então as órbitas — o que o
-olho lê como a esfera — **enchem o círculo reservado por construção** (medido: 99–100% dele em
-qualquer offset e em qualquer instante da animação). Com a silhueta correta o recuo em `z` do
+`envelopeWorldRadius` (`src/utils/screenBudget.js`); o círculo reservado é desenhado com raio `ρ` (a
+escala é `ρ / ORBIT_RADIUS`, com `ORBIT_RADIUS = 6.0` **constante**) e é o que a **nuvem em repouso
+preenche: 100% dele** — é essa a régua que o dono aprova como "o tamanho da esfera". As órbitas têm
+esse círculo como referência e vão **10% além** desde 2026-09-23 (ver "As órbitas"), dentro da
+envolvente que o `radiusWithinGap` garante: um anel de raio de mundo `R` está sobre a casca da esfera
+de raio `R`, e a imagem da esfera é a região desta silhueta. Com a silhueta correta o recuo em `z` do
 mobile deixa de mexer no tamanho: `distance` já está na equação.
 
 **Fora do eixo.** Aquilo só é um círculo se a esfera estiver no eixo óptico, e o grupo nunca
@@ -435,28 +441,106 @@ do container (θ até 50,4°) e `usedPx` de 48 a 604px — a silhueta **nunca** 
 o caso mais apertado é o do eixo, onde é igual com erro de 0,001px. A elipse fica tangente ao
 círculo reservado na direção radial e dentro dele na tangencial.
 
-### As órbitas: elas sempre estiveram lá, o que faltava era contraste
+### As órbitas: contraste primeiro, e depois dez por cento de fora
 
-São três `THREE.EllipseCurve` (raios de mundo 5,2 / 5,6 / 6,0 — frações de `ORBIT_RADIUS`, então
-a de fora **é** o círculo reservado) desenhadas com `THREE.Line` + `LineBasicMaterial`: **1px de
-espessura**, porque o WebGL ignora `linewidth` em todas as plataformas. E entram no `lineGroup`
-**depois** das `particles`, que são `depthWrite: false` + `AdditiveBlending` — ou seja, a nuvem
-nunca passa na frente delas; a visibilidade das órbitas é **puramente contraste**.
+São três `THREE.EllipseCurve` (raios de mundo `5,2 / 5,6 / 6,0` × `ORBIT_ENVELOPE_RATIO`) desenhadas
+com `THREE.Line` + `LineBasicMaterial`: **1px de espessura**, porque o WebGL ignora `linewidth` em
+todas as plataformas. E entram no `lineGroup` **depois** das `particles`, que são `depthWrite:
+false` + `AdditiveBlending` — ou seja, a nuvem nunca passa na frente delas; a visibilidade das
+órbitas é **puramente contraste**.
 
 E era aí que estava o defeito, não no tamanho: `#27272a` a 50% sobre o `#050505` do fundo desenha
 **rgb(22,22,27)** — 17 níveis de diferença, invisível na prática, e por isso a esfera lia como uma
 bola solta. Hoje é **`#52525b` (zinc-600) a 75%** ≈ rgb(63,63,69), 58 níveis acima do fundo (a
-nuvem, `#d4d4d8`, está em 212). O pedido do dono foi *"aumente as órbitas também, para que
-apareçam"*, e **não havia o que aumentar além do círculo**: o raio em tela de cada anel é
-`raio / ORBIT_RADIUS` do círculo reservado, então os três crescem junto com ele (medido em
-2529×1344: ∅599 / ∅645 / ∅**692**). O que se fez foi (a) o contraste acima, (b) abrir os três
-raios (eram mais próximos entre si) e (c) manter a ordem do array = ordem de giro
+nuvem, `#d4d4d8`, está em 212).
+
+**Aquele primeiro pedido foi de contraste, não de tamanho.** *"aumente as órbitas também, para que
+apareçam"* — e **naquele momento não havia o que aumentar além do círculo**: o raio em tela de cada
+anel era `raio / ORBIT_RADIUS` do círculo reservado, então os três cresciam só junto com ele
+(medido em 2529×1344: ∅599 / ∅645 / ∅**692**). O que se fez ali foi (a) o contraste acima, (b) abrir
+os três raios (eram mais próximos entre si) e (c) manter a ordem do array = ordem de giro
 (`rotation.z += 0,003 · (índice + 1)`), para a de fora continuar sendo a mais rápida.
 
+**E o pedido seguinte, no mesmo dia, foi de TAMANHO — e aí sim havia para onde ir.** O dono:
+*"as órbitas também estão nesse limite, tipo a esfera ocupa 100% do espaço, porém gostaria que as
+órbitas ficassem em 110%, por exemplo, pois tem espaço na tela para isso"*. Com a bola em 100% do
+círculo (o tamanho que ele aprovou), "raspar dentro" engoliria os anéis: o que existe **fora** do
+círculo é a envolvente da nuvem, e é onde os anéis passaram a ser desenhados —
+`ORBIT_ENVELOPE_RATIO`, **derivado do `cloudRatio`** (1,1) em vez de escrito à mão, para o teto da
+alavanca não poder ser furado por descuido. Medido projetando os três anéis com o `three` real sob
+60 rotações do grupo, o de fora fica a 0–2px do teto da guarda **por dentro**, em seis viewports:
+
+| Viewport | Círculo reservado (a bola em repouso) | Anéis a 110% | O de fora |
+|---|---|---|---|
+| 2529×1344 | ∅692 | ∅654 / 700 / **765** | +10,5% |
+| 2560×1320 (a janela real do dono) | ∅688 | ∅649 / 694 / **759** | +10,3% |
+| 3840×2160 (4K) | ∅1386 | ∅1313 / 1415 / **1537** | +10,9% |
+| 1904×984 | ∅438 | ∅413 / 437 / **481** | +9,9% |
+| 768×1024 (tablet, toque) | ∅444 | ∅422 / 452 / **492** | +10,8% |
+| 390×844 (telefone, toque) | ∅310 | ∅294 / 315 / **341** | +10,1% |
+
+Os três sobem JUNTOS, então a família se preserva (o espaçamento de 0,4 entre um e outro vira 0,44) e
+a nuvem fica byte a byte onde estava: quem lê "esfera com órbitas" vê um conjunto ~10% maior sem a
+bola mudar de tamanho nem de lugar. O preço está dito e é coerente com o desenho: no topo do "Flux
+Dynamics" a nuvem alcança os mesmos 6,6 de mundo e os anéis coincidem com ela de novo — arrastar o
+slider até o fim recolhe os anéis para dentro da bola. **E o teto dessa alavanca é o `cloudRatio`**:
+acima dele os anéis saem da garantia do `radiusWithinGap` e podem encostar no texto no extremo do
+slider, que é a restrição dura do dono.
+
 **A elipse de cada anel é quase de perfil**: as três rotações (π/3, π/2, π/1.8) deixam os anéis
-achatados, então parte do traço se concentra perto das bordas do círculo. Deixar um deles de
+achatados, então parte do traço se concentra perto das bordas do conjunto. Deixar um deles de
 frente leria ainda mais como "órbita" — não foi feito porque mudaria o desenho aprovado sem
-pedido; é o próximo passo natural se o dono quiser.
+pedido, e **é o único caminho que sobrou para as órbitas ficarem mais visíveis sem sair da
+garantia de não-sobreposição** (elas já estão na envolvente; mais raio não há).
+
+**E isso foi conferido em PIXELS, não só projetado.** Numa varredura de **40 quadros** em 2529×1344
+(o grupo gira várias voltas), medindo a extensão **radial** da tinta do fio a partir do centro que o
+`adjustLayout` escolheu (1281,4, 553,2) — a direção do pior caso, e a única que uma caixa alinhada
+aos eixos não vê, porque a direção de maior raio da elipse projetada gira com o grupo: **379,1px**,
+ou seja **1,096× o círculo reservado** (∅758 contra ∅692; o modelo previa 383,4px = 1,109×, e a
+diferença de ~1% é a orientação que maximiza não ter caído na amostra). A régua do "100%" está no
+antes: em `final-2560.png` e `novo-2560.png` (2560×1440, anteriores à mudança) a tinta acima de 150
+media **693px de largura, e a acima de 40 media os mesmos 693px** — o anel de fora exatamente na
+borda da bola, que é o que o dono descreveu com "a esfera ocupa 100% do espaço". Depois, a bola
+continua com **687–689px** no máximo da varredura (o ∅692 reservado) enquanto o fio passa dela. E
+**nada da cena encosta na UI**: nesses mesmos 40 quadros, nenhum pixel de tinta da cena aparece
+dentro de qualquer um dos 8 retângulos `data-hero-occupied` medidos no DOM — os 5.733px que o
+detector acha ali são tinta **congelada da própria nav** (idênticos, pixel a pixel, nos 40 quadros).
+
+### A bolinha: o terceiro item do sistema de órbitas
+
+No mesmo dia, logo depois dos 110%, o dono: *"adicione também, 1 esfera a cada órbita que «ande» pela
+linha da órbita, e coloque a velocidade dela de acordo com a taxa de clock"*. São três `THREE.Mesh`
+(`SphereGeometry(BEAD_RADIUS = 0,05, 12, 12)` + `MeshBasicMaterial`) **filhas do próprio
+`THREE.Line`** de cada anel: elas herdam a inclinação, e como cada elipse **é** o círculo de raio
+`radius` no plano LOCAL do anel, avançar o ângulo em espaço local é literalmente andar pela linha.
+
+- **Raio LOCAL de `0,05`** (~1/120 do diâmetro do anel de fora), que a escala do grupo transforma em
+  **~5,8px de diâmetro em tela** (0,05 × 0,6855 = 0,0343 de mundo na medição de 2529×1344). É
+  desenhada no passo **opaco**, antes da nuvem: a nuvem passa na frente dela quando está à frente, e
+  o fio cruza por cima — as órbitas continuam sem oclusão (`depthWrite: false`, e entram depois).
+- **A velocidade é do RELÓGIO DO RAF, não do relógio de parede.** `timeRef` (o mesmo que alimenta
+  `uTime`) anda `0,01 + 0,05 · taxa de clock` **por quadro**, e o ângulo da bolinha é
+  `timeRef · 0,2 · (índice + 1) + fase`. A taxa de clock é o slider "Taxa de Clock" do painel, então
+  a bolinha acelera com ele **na mesma proporção que a nuvem** — é o que foi pedido. O ângulo é
+  **função pura** de `timeRef` (nada acumula), então o passo não depende do número de quadros nem de
+  um travamento; o preço é que o relógio é por QUADRO, e numa tela de 120Hz tudo anda 2× mais rápido.
+- **Ela anda duas vezes**: além do passo próprio, o giro do anel (`rotation.z += 0,003·(índice+1)`
+  por quadro) a carrega. Na taxa padrão as duas parcelas são iguais; a 60 fps uma volta completa leva
+  **~5,8s / ~8,7s / ~17,5s** (de fora, do meio, de dentro), **~3,5s / ~5,2s / ~10,5s** no topo do
+  slider (0,5) e **~7,0s / ~10,5s / ~21s** no zero — o termo constante do relógio mantém tudo
+  andando mesmo com o clock em 0. As três nascem a 120° uma da outra.
+- **`0x71717a` (zinc-500), um degrau acima do fio** (`0x52525b` a 75% ≈ rgb(63,63,69); a bolinha
+  desenha rgb(113,113,122)), e muito abaixo da nuvem (212). A cor **não** vem do `color` do painel:
+  as cores do "Energia" são da nuvem.
+
+**E ela custa uma conta à guarda.** A casca da bolinha fica em `6,6 + 0,05·escala` de mundo — **0,76%
+além do anel**, ~**+3,2px** em tela nas 2529×1344, medido pela inversa da silhueta (386,5px contra os
+383,4px do anel). O `radiusWithinGap` **não conhece esse raio** (a desigualdade dele é sobre o raio
+da nuvem no extremo do slider, e o anel já a consome inteira): quem absorve é a `marginPx` — 56px ali,
+≥24px em telas de toque —, com o obstáculo mais próximo a 401,8px. É o **único** elemento da cena que
+passa da envolvente do `cloudRatio` por desenho; se algum dia a folga cair para ~4px, esta é a conta
+que precisa entrar na guarda, não a do anel.
 
 **A folga é derivada, não constante.** `freeSpot.js` tem um `DEFAULT_MARGIN = 32` que é só o
 padrão de quem chama a função solta; o Hero passa a sua, vinda do orçamento: **16px de respiro**
@@ -542,8 +626,10 @@ completo do CV continua no `About`.
 distorção **não** mexer no tamanho da esfera (uma referência viva faria as órbitas encolherem
 ao arrastar "Flux Dynamics" para o topo — o slider mudaria o tamanho da única coisa que
 se vê). A nuvem, porém, cresce com ele: `5,4 + distortion + 0,4` de mundo, ou seja **~110% de
-`ORBIT_RADIUS`** no topo. Como a inversão da silhueta é convexa, +10% de raio de mundo dá mais
-que +10% de raio em tela.
+`ORBIT_RADIUS`** no topo — e essa é exatamente a envolvente em que as ÓRBITAS são desenhadas desde
+2026-09-23 (`ORBIT_ENVELOPE_RATIO`, ver "As órbitas"), de modo que no topo do slider os três anéis
+coincidem com a nuvem e param de aparecer por fora dela. Como a inversão da silhueta é convexa,
++10% de raio de mundo dá mais que +10% de raio em tela.
 
 **A esfera cresceu TRÊS vezes, e as duas primeiras alavancas foram a NUVEM, não o vão
 (2026-09-23).** O dono pediu *"pode aumentar um pouco o tamanho da esfera, se atentando a manter
@@ -553,7 +639,9 @@ que apareçam, quero que a esfera com as órbitas ocupem o maior espaço possív
 esfera já centrada e encostando no teto da porteira central, crescer o **círculo reservado**
 custaria caro (só a folga é alavanca ali, e encurtá-la faz a guarda da nuvem morder em tela larga
 — medido). A alavanca sem custo nenhum é a **outra ponta**: o quanto a bola desenha *dentro* do
-círculo que já existe. A nuvem em repouso desenhava 77% dele; as órbitas, 100%.
+círculo que já existe. A nuvem em repouso desenhava 77% dele; as órbitas, 100% (e no pedido
+seguinte, já com a bola em 100%, elas passaram a 110% — mas por FORA, sem mexer no círculo: ver
+"As órbitas").
 
 O que a guarda `radiusWithinGap` reserva é o **pior caso** da nuvem — raio-base **+** empurrão do
 cursor **+** topo do slider. Então o empurrão e o topo são orçamento que se pode ceder para o
@@ -570,15 +658,18 @@ As **três primeiras linhas trocam parcelas dentro da mesma soma** (6,8 = 113% d
 e por isso o `cloudRatio` é idêntico nas três e a guarda devolve **exatamente os mesmos números
 em toda tela**: mesmo raio reservado, mesmo pior caso, mesma folga, e a guarda mordendo nos MESMOS
 casos — logo o ganho é **uniforme, inclusive nas telas largas onde a guarda manda**. O que subiu é
-só o repouso, até a bola **encher** o círculo reservado (que é o mesmo círculo das órbitas). Os
+só o repouso, até a bola **encher** o círculo reservado (que é a régua que ficou para ela — as
+órbitas saíram para a envolvente no pedido seguinte, ver "As órbitas"). Os
 dois preços, explícitos: o empurrão do vértice sob o cursor caiu de 0,8 para **0,4** (a bolha que
 segue o mouse é a metade — o resto da reação ao ponteiro é a paralaxe da câmera) e o topo do
 slider "Flux Dynamics" desceu de 2,0 para **1,0**. Subir o raio-base **sem ceder** um dos dois é
 que não dá: aí a soma passa de 6,8 e a guarda encolhe a esfera justamente nas telas largas.
 
 **A quarta linha é de outra natureza: ela BAIXA a soma, e é aí que a alavanca muda de lado.** Com
-100% do círculo já ocupado, não havia mais o que raspar *dentro* dele sem engolir as órbitas — o
-que sobrou foi mexer no **teto da guarda**, que é `folga / (cloudRatio − 1)`:
+100% do círculo já ocupado, não havia mais o que raspar *dentro* dele sem engolir as órbitas — que é
+literalmente o pedido que o dono fez em seguida, e que se resolveu do outro lado da cerca (ver "As
+órbitas": os anéis foram para a envolvente, 10% além). Aqui o que sobrou foi mexer no **teto da
+guarda**, que é `folga / (cloudRatio − 1)`:
 
 - Baixar o topo do slider de 1,0 para 0,8 leva a soma de 6,8 para **6,6** e o `cloudRatio` de
   1,1333 para **1,100**. O excesso relativo da nuvem cai, e o teto que a guarda sustenta com uma
@@ -601,13 +692,17 @@ o teto vai com `1/(cloudRatio − 1)`). O limite dessa direção é
 o slider virar um botão — abaixo de ~0,4 de pista ele deixa de ser um controle e passa a ser um
 interruptor, e aí o ganho (~+4% por 0,2 de topo) não paga o que se perde de interação. Se o
 pedido vier de novo, é esta a conversa: **topo do slider ↔ folga ↔ raio**, e não uma busca por
-vão.
+vão. **Para as órbitas, a alavanca é a mesma e agora tem nome**: elas são desenhadas na envolvente
+(`ORBIT_ENVELOPE_RATIO = cloudRatio`), então o topo do slider as move **direto** — e o teto é o
+próprio `cloudRatio`, porque acima dele a garantia de não-sobreposição deixa de cobrir os anéis.
 
 Medido no dump real do monitor do dono (2529×1344, o CSS viewport de uma janela de 2560×1440), a
 tinta da nuvem em repouso foi de ∅511 → ∅599 → ∅666 e o círculo reservado **acompanhou** (era
 ∅666 nas três primeiras linhas, e em 100% a bola enche o círculo). Com a quarta linha o círculo
 cresceu para **∅692** e a tinta foi junto — os números vêm das mesmas funções que o componente
-usa, com o `usedPx` do dump real.
+usa, com o `usedPx` do dump real. E é nesse mesmo ∅692 que os três anéis agora estão desenhados
+**por fora** (∅654 / 700 / **765**, o de fora 10,5% além): a tinta que o olho mede nessa tela
+passou a ser ~765, sem a bola ter mudado um pixel.
 
 E a captura de tela em 2560×1440 confere: medindo os pixels claros da nuvem (limiar de brilho 90)
 nas capturas do mesmo estado de layout, a tinta foi de **500 × 496px** (nuvem 4,0) para
@@ -637,10 +732,10 @@ a exceção, e é a que muda os números**: ela baixa a soma para 6,6, e daí a 
 tela larga (2% em vez de 3% em 5120 e 7680) e o teto dela sobe o suficiente para a folga encurtar
 sem preço — é o que faz o círculo reservado crescer no monitor do dono.
 
-A troca segue a mesma de sempre: as órbitas ditam o círculo (ficam dentro dele por construção e
-são o que o olho lê como a esfera), e a alternativa de deixar a nuvem ditar **em toda tela**
-encolheria as órbitas ~10% em todo viewport — justamente o defeito que a inversão da silhueta
-veio corrigir. O teto da nuvem só morde onde a outra ponta seria a nuvem encostar em algo. No
+A troca segue a mesma de sempre: o **círculo é da bola em repouso** (é o que o olho lê como a
+esfera, e as órbitas o usam como referência a 110%), e a alternativa de deixar a nuvem ditar **em
+toda tela** encolheria a bola ~10% em todo viewport — justamente o defeito que a inversão da
+silhueta veio corrigir. O teto da nuvem só morde onde a outra ponta seria a nuvem encostar em algo. No
 valor padrão do slider (0,6) a nuvem **enche** o círculo (100%) — é o estado em que o site abre, e
 a partir daí o slider só pode crescer; no topo (0,8) ela pede **110%** do círculo, e quem absorve
 esse excesso é a folga de 16+8+paralaxe. Só em tela muito larga (5120×1440 e acima) a folga é

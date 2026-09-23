@@ -31,7 +31,8 @@ import {
  * AS TRÊS PRIMEIRAS TROCAM DENTRO DA SOMA (6,8), e por isso o `cloudRatio` é idêntico nelas: a
  * guarda devolve exatamente os mesmos números em toda tela, o pior caso não cresce (∅755 e 28px de
  * folga no monitor do dono, igual) e o raio reservado não muda uma vírgula — o que muda é só o
- * repouso, e a bola passa a ENCHER o círculo reservado, que é o mesmo círculo das órbitas.
+ * repouso, e a bola passa a ENCHER o círculo reservado — que desde 2026-09-23 é só a régua DA
+ * BOLA: as órbitas saíram para a envolvente da nuvem (`ORBIT_ENVELOPE_RATIO`, naquele mesmo dia).
  *
  * A QUARTA NÃO: ela BAIXA A SOMA. Com 100% de repouso a bola já não cresce mais dentro do círculo,
  * então o que cresce é o próprio círculo — e ele sai da folga (`marginPx`), que até aqui era
@@ -64,6 +65,116 @@ const CLOUD_DETAIL = 27; // = 20 · 5,4/4,0
 // bloco do `CLOUD_BASE_RADIUS`). Interpolado no shader de propósito: é o TERCEIRO termo da soma
 // que o `CLOUD_MAX_RATIO` fecha, e um número solto dentro do GLSL seria o único sem rastro.
 const CURSOR_PUSH = 0.4;
+/**
+ * TOPO DO SLIDER "Flux Dynamics" do painel de calibração — o TERCEIRO termo da soma acima. Está
+ * aqui, e não junto do painel, porque é ele que fecha o `CLOUD_MAX_RATIO` abaixo: mexer nele mexe
+ * na guarda, nas órbitas e no tamanho da esfera em tela larga ao mesmo tempo.
+ */
+const SLIDER_MAX_DISTORTION = 0.8; // = SLIDERS[0].max no HeroCalibration
+
+/**
+ * Raio de MUNDO com que a nuvem em REPOUSO é desenhada — o círculo que o `radiusWithinGap` reserva
+ * na tela (`usedPx`). É a régua do tamanho: o que o dono aprova como "o tamanho da esfera".
+ *
+ * É uma CONSTANTE de propósito, e não o raio vivo do grupo: a nuvem cresce com o slider
+ * `distortion` (5,4 do icosaedro + distortion + 0,4 do empurrão do vértice sob o cursor, até 6,6).
+ * Se a escala fosse `ρ / raioVivo`, arrastar "Flux Dynamics" de 0.6 para o topo faria as ÓRBITAS
+ * ENCOLHEREM — o slider mudaria o tamanho da única coisa que se vê. Com a referência fixa o slider
+ * não mexe no tamanho, e por isso este componente não precisa re-rodar `adjustLayout` quando
+ * `distortion` muda. A escala do grupo é `envelopeWorldRadius(usedPx) / ORBIT_RADIUS`.
+ *
+ * O EXCESSO DA NUVEM. No topo do slider ela chega a 110% de `ORBIT_RADIUS` de mundo e desenha mais
+ * que isso além do círculo reservado (a inversão da silhueta é convexa, então +10% de raio de mundo
+ * dá mais de +10% de raio em tela). Como o excesso é RELATIVO (proporcional ao raio) e a folga de
+ * `marginPx` é ABSOLUTA (16px + 8px + a paralaxe, ~h/45), os dois só se cobrem enquanto a esfera é
+ * pequena: o excesso passa a folga quando o raio passa de ~40% da altura. Quem resolve é o
+ * `radiusWithinGap`: onde a nuvem cabe (praticamente toda tela) o raio não muda NADA, e onde não
+ * cabe ele cede o mínimo — em 5120×1440 e em 7680×4320 ele cede 2% (medido; são os mesmos casos de
+ * antes, quando cedia 3% com a folga maior). A régua do tamanho segue sendo o vão.
+ */
+const ORBIT_RADIUS = 6.0;
+
+/**
+ * Raio máximo da nuvem, em mundo LOCAL, dividido pelo raio das órbitas — o contrato com o shader,
+ * escrito uma vez: `CLOUD_BASE_RADIUS` (5,4) é o `IcosahedronGeometry`, `CURSOR_PUSH` (0,4) é o
+ * `interaction * ` do `gl_Position` (o empurrão do vértice sob o cursor) e `SLIDER_MAX_DISTORTION`
+ * (0,8) é o TOPO DO SLIDER "Flux Dynamics" do painel. Os três somam 6,6 (110,0% de `ORBIT_RADIUS`)
+ * e é essa SOMA que é o contrato, nos dois sentidos: subir o raio-base só é gratuito se o empurrão
+ * ou o topo cederem na mesma medida (o `CLOUD_MAX_RATIO` não muda e o `radiusWithinGap` devolve os
+ * mesmos números em toda tela), e BAIXAR a soma é o que torna a folga barata — o teto da guarda é
+ * `folga / (cloudRatio − 1)`, então 1,1333 → 1,100 multiplica por 1,33 o raio que a mesma folga
+ * sustenta (é essa a alavanca de 2026-09-23 que aumentou as órbitas, ver o bloco do
+ * `CLOUD_BASE_RADIUS`). `uSize` não entra: ele só muda o `gl_PointSize`, não a posição dos vértices.
+ *
+ * ELE DEIXOU DE SER SÓ O PIOR CASO DA NUVEM. A desigualdade que o `radiusWithinGap` fecha é
+ * `cloudRatio · h(usedPx) <= h(obstaclePx)`, ou seja: a silhueta de mundo `1,1 · h(usedPx)` não
+ * alcança o obstáculo mais próximo (a folga de `marginPx` fica FORA dessa conta). As ÓRBITAS são
+ * desenhadas exatamente nessa envolvente desde 2026-09-23 (`ORBIT_ENVELOPE_RATIO`, logo abaixo), e
+ * herdam a garantia inteira: um anel de raio de mundo `R` está sobre a casca da esfera de raio `R`,
+ * e a imagem dessa esfera é a região da silhueta — logo o anel não sai dela. O que era o teto de
+ * uma tinta virou o teto das duas, e é por isso que este número é o teto daquele.
+ */
+const CLOUD_MAX_RATIO = (CLOUD_BASE_RADIUS + CURSOR_PUSH + SLIDER_MAX_DISTORTION) / ORBIT_RADIUS;
+
+/**
+ * Onde as três órbitas são desenhadas, como múltiplo do círculo reservado — o pedido do dono de
+ * 2026-09-23: *"as órbitas também estão nesse limite, tipo a esfera ocupa 100% do espaço, porém
+ * gostaria que as órbitas ficassem em 110%, por exemplo, pois tem espaço na tela para isso"*.
+ * Em 100% os três anéis ficavam na borda da bola (a de fora ERA o círculo, por construção); a bola
+ * fica onde ele aprovou e só os anéis andam para fora — em tela, ~+10% de diâmetro no de fora.
+ *
+ * É DERIVADO do `CLOUD_MAX_RATIO`, e não o literal 1,1, por um motivo só: acima dele as órbitas
+ * saem da garantia do `radiusWithinGap` e poderiam encostar no texto ou no painel no extremo do
+ * slider — a restrição dura do dono. Escrito como derivação, o teto não pode ser furado por
+ * descuido (quem mexer na soma da nuvem move as órbitas junto) e o 1,1 deixa de existir como
+ * segunda cópia de um número que já mora na soma.
+ *
+ * E PARA QUEM FOR MEXER AQUI: subir as órbitas além de 110% NÃO se resolve subindo este número —
+ * ele não é uma alavanca, é a igualdade com a envolvente. As saídas são a soma da nuvem (que
+ * encolhe o círculo reservado, ou seja, encolhe a bola aprovada) ou aceitar sobreposição no topo do
+ * slider. Há um acoplamento no outro sentido, e ele é visível: se um dia o topo do slider baixar, as
+ * órbitas encolhem junto com a envolvente que as define.
+ */
+const ORBIT_ENVELOPE_RATIO = CLOUD_MAX_RATIO;
+
+/**
+ * A BOLINHA que percorre cada órbita — o terceiro item do sistema de órbitas, pedido em
+ * 2026-09-23: *"adicione também, 1 esfera a cada órbita que «ande» pela linha da órbita, e coloque
+ * a velocidade dela de acordo com a taxa de clock"*. Uma por anel, com o CENTRO sobre a linha (a
+ * posição dela é um ponto da mesma `EllipseCurve` que desenhou o anel) e o passo amarrado à "Taxa de
+ * Clock" do painel — que é a prop `speed`, o mesmo número que já acelera a nuvem e o relógio.
+ *
+ * RAIO LOCAL, E É POR ISSO QUE ELE NÃO É UM NÚMERO EM PX. A bolinha é FILHA do anel, que é filho do
+ * `lineGroup` dentro do `systemsGroup` — o grupo que o `adjustLayout` escala por
+ * `envelopeWorldRadius(usedPx) / ORBIT_RADIUS`. Logo ela cresce junto com a esfera e com os anéis,
+ * em toda tela, sem uma medida a mais. Em tela: o diâmetro dela é ~1/120 do diâmetro do anel
+ * (~5,8px no monitor do dono, ∅692). Comparar com um ponto da nuvem é tentador e engana, porque o
+ * `gl_PointSize` do shader é medido em px de FRAMEBUFFER e não acompanha a escala do grupo (fica em
+ * ~2px de framebuffer, ~1px de CSS num monitor 2×): no desktop a bolinha é bem maior que um ponto,
+ * e no telefone a diferença encolhe (lá ela sai com ~2,6px de CSS). O que importa é que ela se lê.
+ *
+ * E O QUE ELA ACRESCENTA AO LIMITE É O PRÓPRIO RAIO: o anel de fora é desenhado no teto da guarda
+ * (`ORBIT_ENVELOPE_RATIO`) e a bolinha passa dele em `BEAD_RADIUS` — ~3px de tela. Quem absorve isso
+ * é o `marginPx`, que fica FORA da envolvente: no mínimo 24px (tela de toque, sem parcela de
+ * paralaxe). A folga continua 8× maior que o excesso, então "sem sobreposição" segue garantido — mas
+ * é daqui que sai o teto se alguém quiser uma bolinha muito maior.
+ */
+const BEAD_RADIUS = 0.05;
+/**
+ * Passo angular da bolinha, em radianos por unidade do RELÓGIO do RAF — `timeRef`, o mesmo que
+ * alimenta `uTime` e que anda `0,01 + 0,05 · taxa de clock` por QUADRO. A velocidade não é lida em
+ * segundos de propósito: é a unidade da cena inteira, e é o que faz a "Taxa de Clock" mover a
+ * bolinha na MESMA proporção que move a nuvem (o pedido do dono).
+ *
+ * Multiplicado por `(índice + 1)`, como o giro dos anéis. E ela anda duas vezes, porque o giro do
+ * anel a carrega junto: no padrão do clock as duas parcelas são iguais (`0,003 · (índice+1)` por
+ * quadro cada), e é a SOMA que se lê como velocidade. A 60 fps, uma volta COMPLETA (o que o olho
+ * vê) leva — com a taxa padrão (0,1): ~5,8s a de fora, ~8,7s a do meio e ~17,5s a de dentro; no
+ * topo da pista (0,5): ~3,5s / ~5,2s / ~10,5s; no zero: ~7,0s / ~10,5s / ~21s, onde o termo
+ * constante do relógio (0,01 por quadro) mantém tudo andando. Não é alavanca de tamanho nem de
+ * layout: mexer aqui só muda o passo das bolinhas.
+ */
+const BEAD_ANGLE_RATE = 0.2;
 
 const vertexShader = `
   uniform float uTime;
@@ -304,17 +415,46 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
      *
      * E ELAS NUNCA SÃO OCLUÍDAS PELA NUVEM: `particles` é `depthWrite: false` e `AdditiveBlending`,
      * e o `lineGroup` entra DEPOIS dele no mesmo grupo, então as linhas são desenhadas por cima e
-     * visíveis mesmo onde a bola está densa. É por isso que elas não precisaram de vão: aumentar
-     * o raio delas só as afastaria da bola sem ganhar visibilidade nenhuma.
+     * visíveis mesmo onde a bola está densa. É também por isso que resolvê-las por FORA funciona:
+     * um anel além da casca da nuvem continua desenhado por cima dela, e não some atrás.
      *
-     * O QUE "AUMENTAR" QUER DIZER AQUI. O raio delas em tela é `raio / ORBIT_RADIUS` do círculo
-     * reservado — a de fora É o círculo por construção. Então crescer as órbitas = crescer o
-     * círculo, e foi isso que a folga menor comprou (ver o bloco do `CLOUD_BASE_RADIUS`): no
-     * monitor do dono os três anéis saem ∅599/645/692 contra ∅577/622/666 antes, e o de fora
-     * passa a ser visível — a leitura de "esfera com órbitas" fica maior do que o número da bola
-     * sozinho sugere. Os raios agora se espaçam de 0,4 em 0,4 (5,2 / 5,6 / 6,0), em vez dos
-     * 5,2/5,5/6,0 de antes, para os três lerem como família e não como dois anéis colados.
+     * ONDE ELAS SÃO DESENHADAS (o segundo pedido de 2026-09-23). *"as órbitas também estão nesse
+     * limite, tipo a esfera ocupa 100% do espaço, porém gostaria que as órbitas ficassem em 110%,
+     * por exemplo, pois tem espaço na tela para isso"*. Em 100% o anel de fora ERA o círculo
+     * reservado, por construção: a escala do grupo é `envelopeWorldRadius(usedPx) / ORBIT_RADIUS` e
+     * a órbita de fora tem raio de mundo `ORBIT_RADIUS`. Então "aumentar as órbitas" era aumentar o
+     * círculo — e o círculo é a bola, que o dono acabou de aprovar. A saída não é o círculo e não é
+     * raspá-lo por dentro: é a ENVOLVENTE da nuvem, `ORBIT_ENVELOPE_RATIO` (110% do círculo), que a
+     * guarda já reservava para o pior caso do slider. Os três raios sobem JUNTOS, então a família
+     * se preserva (o espaçamento de 0,4 entre um e outro vira 0,44) e a nuvem fica byte a byte onde
+     * estava: quem lê "esfera com órbitas" vê um conjunto ~10% maior sem a bola mudar de tamanho
+     * nem de lugar. Os raios base são os de 2026-09-23 (`5,2 / 5,6 / 6,0`, espaçados de 0,4 em 0,4
+     * para os três lerem como família e não como dois anéis colados) e a razão vive no topo do
+     * arquivo, onde está o porquê de 110% ser o teto.
+     *
+     * O PREÇO, EXPLÍCITO. Os anéis passam a gastar a folga que a guarda reservava para a nuvem no
+     * extremo do slider: no topo do "Flux Dynamics" a nuvem alcança os mesmos 6,6 de mundo e os
+     * anéis coincidem com ela de novo (é o desenho funcionando como projetado, não um defeito —
+     * quem arrasta o slider até o fim recolhe os anéis para dentro da bola). A folga de `marginPx`
+     * continua fora dessa conta, e é ela que separa do texto e do painel: medido projetando os três
+     * anéis sob 60 rotações do grupo nos viewports do `DESIGN.md`, o de fora fica a 0–2px do teto da
+     * guarda POR DENTRO — nunca além dele, em nenhuma tela.
+     *
+     * E as BOLINHAS que andam sobre elas (o pedido seguinte, no mesmo dia) são filhas destes anéis e
+     * saem do mesmo material — o porquê do raio, do material e do passo está nas duas constantes do
+     * topo do arquivo (`BEAD_RADIUS` / `BEAD_ANGLE_RATE`).
      */
+    // Uma geometria e um material para as TRÊS bolinhas: elas são idênticas, só a posição muda a
+    // cada quadro. Criados aqui dentro, e não no escopo do módulo, para o cleanup deste efeito
+    // descartá-los como descarta o resto (o efeito roda de novo a cada HMR e no StrictMode).
+    const beadGeometry = new THREE.SphereGeometry(BEAD_RADIUS, 12, 12);
+    // Um degrau acima do fio: `0x71717a` (zinc-500) contra o `0x52525b` (zinc-600) a 0,75 da linha,
+    // que compõe rgb(63,63,69) sobre o fundo. Um disco CHEIO na mesma cor leria quase igual ao fio,
+    // e a bolinha é justamente o que precisa se ler como algo ANDANDO. Continua bem abaixo da nuvem
+    // (#d4d4d8 está em 212), então não compete com a bola — e não segue a prop `color`: a cor do
+    // painel é do perfil de energia da nuvem, os anéis e as bolinhas são o instrumento.
+    const beadMaterial = new THREE.MeshBasicMaterial({ color: 0x71717a });
+
     const createTechOrbit = (radius, rotation) => {
       const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, 2 * Math.PI, false, 0);
       const points = curve.getPoints(128);
@@ -327,16 +467,27 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
       const orbit = new THREE.Line(geo, mat);
       orbit.rotation.x = rotation.x;
       orbit.rotation.y = rotation.y;
+      // A bolinha é FILHA do anel, e é isso que faz "andar pela linha" ser uma conta de uma linha:
+      // ela herda a inclinação do anel (o `rotation` acima) e é carregada pelo giro `rotation.z`
+      // dele, então basta girar o ângulo dela no plano LOCAL do anel — lá dentro a elipse é o
+      // círculo de raio `radius` que a `EllipseCurve` desenhou. A posição inicial `(radius, 0)` é o
+      // ângulo zero dessa mesma curva; o RAF reescreve a posição a cada quadro.
+      const bead = new THREE.Mesh(beadGeometry, beadMaterial);
+      bead.position.set(radius, 0, 0);
+      orbit.add(bead);
       lineGroup.add(orbit);
-      return orbit;
+      return { line: orbit, bead, radius };
     };
 
-    // Ordem = velocidade de giro (`rotation.z += 0.003 * (índice + 1)` no RAF): o de fora fica
-    // por último para continuar sendo o mais rápido, como era antes.
+    // Ordem = velocidade de giro (`rotation.z += 0.003 * (índice + 1)` no RAF, e as bolinhas
+    // acompanham com o mesmo fator): o de fora fica por último para continuar sendo o mais rápido,
+    // como era antes. Os raios saem multiplicados por `ORBIT_ENVELOPE_RATIO` (5,72 / 6,16 / 6,6 de
+    // mundo) contra uma nuvem em repouso de 6,0: o de fora fica FORA da bola, o do meio pica a casca
+    // dela e o de dentro continua dentro.
     const orbits = [
-      createTechOrbit(5.2, { x: Math.PI / 3, y: Math.PI / 6 }),
-      createTechOrbit(5.6, { x: Math.PI / 2, y: 0 }),
-      createTechOrbit(6.0, { x: Math.PI / 1.8, y: Math.PI / 4 }),
+      createTechOrbit(5.2 * ORBIT_ENVELOPE_RATIO, { x: Math.PI / 3, y: Math.PI / 6 }),
+      createTechOrbit(5.6 * ORBIT_ENVELOPE_RATIO, { x: Math.PI / 2, y: 0 }),
+      createTechOrbit(6.0 * ORBIT_ENVELOPE_RATIO, { x: Math.PI / 1.8, y: Math.PI / 4 }),
     ];
 
     let mouseX = 0;
@@ -351,43 +502,10 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
 
     // container, não window: o container É o hero.
     //
-    // Raio de MUNDO com que o grupo é desenhado: a maior das três órbitas
-    // (`createTechOrbit(6.0)`), que é o que o olho lê como a esfera.
-    //
-    // É uma CONSTANTE de propósito, e não o raio vivo do grupo: a nuvem de pontos cresce com
-    // o slider `distortion` (5,4 do icosaedro + distortion + 0,4 do empurrão do vértice sob o
-    // cursor, até 6,6). Se a escala fosse `ρ / raioVivo`, arrastar "Flux Dynamics" de 0.6 para
-    // o topo faria as ÓRBITAS ENCOLHEREM — o slider mudaria o tamanho da única coisa que se
-    // vê. Com a referência fixa o slider não mexe no tamanho, e por isso este componente não
-    // precisa re-rodar `adjustLayout` quando `distortion` muda.
-    //
-    // O EXCESSO DA NUVEM. No topo do slider ela chega a 110% de `ORBIT_RADIUS` de mundo e
-    // desenha mais que isso além do círculo reservado (a inversão da silhueta é convexa, então
-    // +10% de raio de mundo dá mais de +10% de raio em tela). Como o excesso é RELATIVO
-    // (proporcional ao raio) e a folga de `marginPx` é ABSOLUTA (16px + 8px + a paralaxe,
-    // ~h/45), os dois só se cobrem enquanto a esfera é pequena: o excesso passa a folga quando
-    // o raio passa de ~40% da altura. Quem resolve é o
-    // `radiusWithinGap`: onde a nuvem cabe (praticamente toda tela) o raio não muda NADA, e
-    // onde não cabe ele cede o mínimo — em 5120×1440 e em 7680×4320 ele cede 2% (medido; são os
-    // mesmos casos de antes, quando cedia 3% com a folga maior), e a régua do tamanho continua
-    // sendo o vão e as órbitas.
-    const ORBIT_RADIUS = 6.0;
-
-    /**
-     * Raio máximo da nuvem, em mundo LOCAL, dividido pelo raio das órbitas — o contrato com o
-     * shader, escrito uma vez: `CLOUD_BASE_RADIUS` (5,4) é o `IcosahedronGeometry`, `CURSOR_PUSH`
-     * (0,4) é o `interaction * ` do `gl_Position` (o empurrão do vértice sob o cursor) e
-     * `SLIDER_MAX_DISTORTION` (0,8) é o TOPO DO SLIDER "Flux Dynamics" do painel. Os três somam
-     * 6,6 (110,0% de `ORBIT_RADIUS`) e é essa SOMA que é o contrato, nos dois sentidos: subir o
-     * raio-base só é gratuito se o empurrão ou o topo cederem na mesma medida (o `CLOUD_MAX_RATIO`
-     * não muda e o `radiusWithinGap` devolve os mesmos números em toda tela), e BAIXAR a soma é o
-     * que torna a folga barata — o teto da guarda é `folga / (cloudRatio − 1)`, então 1,1333 → 1,100
-     * multiplica por 1,33 o raio que a mesma folga sustenta (é essa a alavanca de 2026-09-23 que
-     * aumentou as órbitas, ver o bloco do `CLOUD_BASE_RADIUS`). `uSize` não entra: ele só muda o
-     * `gl_PointSize`, não a posição dos vértices.
-     */
-    const SLIDER_MAX_DISTORTION = 0.8; // = SLIDERS[0].max no HeroCalibration
-    const CLOUD_MAX_RATIO = (CLOUD_BASE_RADIUS + CURSOR_PUSH + SLIDER_MAX_DISTORTION) / ORBIT_RADIUS;
+    // `ORBIT_RADIUS`, o `CLOUD_MAX_RATIO` e o `ORBIT_ENVELOPE_RATIO` moram no topo do arquivo,
+    // junto da soma da nuvem que os define (e o porquê de cada um está lá): a escala do grupo
+    // divide por `ORBIT_RADIUS`, aqui embaixo no `adjustLayout`, e as órbitas acima são desenhadas
+    // a `ORBIT_ENVELOPE_RATIO` vezes ele.
 
     /**
      * Caixas que ocupam espaço no Hero, em px relativos ao container.
@@ -536,9 +654,10 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
       }
 
       const offsetPx = Math.hypot(spot.x - width / 2, spot.y - height / 2);
-      // O vão e o teto dizem quanto cabe às ÓRBITAS; o `radiusWithinGap` confere se a NUVEM
-      // (no extremo do slider, que é maior que as órbitas) ainda cabe no mesmo lugar. Onde ela
-      // cabe — praticamente toda tela —, ele devolve o teto intacto.
+      // O vão e o teto dizem quanto cabe ao CÍRCULO reservado (a régua da nuvem em repouso); o
+      // `radiusWithinGap` confere se a tinta TODA no pior caso — a nuvem no extremo do slider e as
+      // ÓRBITAS, que são desenhadas na mesma envolvente (`ORBIT_ENVELOPE_RATIO`) — ainda cabe no
+      // mesmo lugar. Onde ela cabe — praticamente toda tela —, ele devolve o teto intacto.
       const usedPx = radiusWithinGap({
         ceilingPx: Math.min(spot.radius, capRadiusPx),
         obstaclePx: spot.obstacle,
@@ -555,6 +674,9 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
       systemsGroup.visible = true;
 
       const envelope = envelopeWorldRadius({ usedPx, fPx, distance, offsetPx });
+      // A escala é o CÍRCULO RESERVADO: `ORBIT_RADIUS` de mundo vira `usedPx` em tela. As órbitas
+      // estão em `ORBIT_ENVELOPE_RATIO · ORBIT_RADIUS` de mundo, ou seja, desenham 110% dele por
+      // fora (e a nuvem, que vai de 5,4 a 6,6 de mundo conforme o slider, desenha de 90% a 110%).
       systemsGroup.scale.setScalar(envelope / ORBIT_RADIUS);
 
       // Centro do grupo: converte a posição em px para unidades de mundo. A referência é o
@@ -604,8 +726,14 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
       systemsGroup.rotation.z = Math.sin(timeRef.current * 0.1) * 0.05;
 
       lineGroup.rotation.x = Math.sin(timeRef.current * 0.05) * 0.2;
-      orbits.forEach((orbit, i) => {
-        orbit.rotation.z += 0.003 * (i + 1);
+      orbits.forEach(({ line, bead, radius }, i) => {
+        line.rotation.z += 0.003 * (i + 1);
+        // A bolinha anda pela linha. O ângulo é função PURA do relógio — nada acumula aqui dentro,
+        // senão o passo dependeria de quantos quadros o RAF já deu — e o fator `(i + 1)` a faz
+        // acompanhar o giro do próprio anel. A fase inicial de 120° por índice só espalha as três,
+        // para não nascerem alinhadas.
+        const angle = timeRef.current * BEAD_ANGLE_RATE * (i + 1) + (i * Math.PI * 2) / 3;
+        bead.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
       });
 
       // PARALLAX_WORLD é a MESMA constante que a folga de posicionamento reserva para este
@@ -660,10 +788,13 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
       }
       geometry.dispose();
       material.dispose();
-      orbits.forEach((orbit) => {
-        orbit.geometry.dispose();
-        orbit.material.dispose();
+      orbits.forEach(({ line }) => {
+        line.geometry.dispose();
+        line.material.dispose();
       });
+      // Comuns às três bolinhas (ver a criação, acima do `createTechOrbit`).
+      beadGeometry.dispose();
+      beadMaterial.dispose();
       // Sem isto o contexto WebGL vaza a cada HMR e a cada double-invoke do
       // StrictMode; depois de ~16 o navegador descarta o mais antigo e o fundo
       // fica preto.
