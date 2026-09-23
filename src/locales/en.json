@@ -7,6 +7,16 @@
   "codeButton": "Code",
   "linkCV": "Leandro_Sales_Fullstack_Developer.pdf",
 
+  "calibTitle": "System Calibration",
+  "calibDistortion": "Flux Dynamics",
+  "calibThreads": "Processing Threads",
+  "calibClock": "Clock Rate",
+  "calibDensity": "Density",
+  "calibEnergy": "Energy Profile",
+  "calibColorOrange": "Orange",
+  "calibColorBlue": "Blue",
+  "calibColorGreen": "Green",
+
   "role": "Full Stack Software Engineer",
   "heroTagline": "Discipline and performance.",
   "heroSubline": "Full Stack, end to end: React, Next.js, React Native, Node.js, Python, and TypeScript.",

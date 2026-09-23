@@ -88,24 +88,12 @@ const Hero = ({ text, isEn, onLangChange }) => {
           </nav>
         </header>
 
-        {/* Abaixo de md não existe nav: os 4 links acima são `md:inline` e os únicos
-            anchors acessíveis ficavam no rodapé. Linha rolável em vez de menu
-            sanfona — sem JS, sem estado, sem overlay. */}
-        <nav
-          data-hero-occupied
-          className="animate-fade-in mt-5 flex gap-3 overflow-x-auto pb-1 font-mono text-xs md:hidden"
-          style={{ animationDelay: "0.15s" }}
-        >
-          {NAV.map(({ href, label }) => (
-            <a
-              key={href}
-              href={href}
-              className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-zinc-400 transition-colors duration-200 ease-out-expo hover:border-white/20 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
-            >
-              {text[label]}
-            </a>
-          ))}
-        </nav>
+        {/* AQUI VIVIA A BARRA DE NAVEGAÇÃO DO MOBILE, e ela foi removida a pedido do dono
+            em 2026-09-23 ("no mobile, retire a barra de navegação superior"). Era uma linha
+            rolável de pílulas com os 4 anchors, `md:hidden`, marcada com `data-hero-occupied`:
+            no telefone ela era um obstáculo de ~44px de altura logo abaixo do header, na faixa
+            em que a esfera procura espaço. Os anchors continuam acessíveis no rodapé (que lê o
+            mesmo `NAV`) e o `LangToggle` continua no header — não recrie a barra sem pedido. */}
 
         {/* `mt-16 md:mt-20 lg:mt-auto`: em 768–1023px o `mt-auto` zerava o respiro
             quando não havia sobra de altura, e o bloco colava no header. O `mt-auto`
@@ -119,9 +107,16 @@ const Hero = ({ text, isEn, onLangChange }) => {
             full-width da caixa de conteúdo. É que o `getBoundingClientRect` inclui o
             PADDING, e o `lg:pr-80` acima põe 320px de padding dentro da caixa medida: o
             obstáculo se estendia 320px além da tinta, justamente na faixa (1024–1440px) em
-            que a restrição é horizontal. Medir a folha mede a caixa de conteúdo. */}
+            que a restrição é horizontal. Medir a folha mede a caixa de conteúdo.
+
+            TEXTO MENOR NO MOBILE (2026-09-23, pedido do dono: "diminua um pouco as fontes
+            dos textos do hero e coloque as margins-top para 1 rem, dando mais espaço para o
+            conjunto da esfera"). O `sm:`/`md:` devolve o tamanho antigo a partir de 640/768px,
+            então tablet e desktop saem idênticos — e o `mt-4` (1rem) vale só abaixo de 768px,
+            onde a sobra vertical é o que decide o tamanho da esfera. Cada `mt-4` aqui é altura
+            que o bloco devolve ao vão livre. */}
         <div
-          className="animate-fade-in mt-16 w-full max-w-4xl lg:mt-auto lg:pr-80 xl:pr-0"
+          className="animate-fade-in mt-4 w-full max-w-4xl md:mt-16 lg:mt-auto lg:pr-80 xl:pr-0"
           style={{ animationDelay: "0.2s" }}
         >
           <div data-hero-occupied="ink" className="mb-6 flex items-center gap-3">
@@ -145,33 +140,33 @@ const Hero = ({ text, isEn, onLangChange }) => {
               é que a caixa mentirosa destes cai bem na faixa do MEIO da tela, que é a que o
               posicionamento centrado procura — sozinha, ela fechava o corredor central. Por
               isso eles também medem por tinta.
-              Quem usa o marcador SEM valor (as duas navs, o logo, o painel) tem moldura
+              Quem usa o marcador SEM valor (a nav, o logo, o painel) tem moldura
               visível: ali a caixa É a tinta, e medir por `Range` encolheria o obstáculo para
               dentro da borda — a esfera encostaria na moldura. */}
           <h1
             data-hero-occupied="ink"
-            className="text-5xl font-medium leading-none tracking-tighter text-white md:text-7xl xl:text-8xl"
+            className="text-4xl font-medium leading-none tracking-tighter text-white sm:text-5xl md:text-7xl xl:text-8xl"
           >
             Leandro Sales
           </h1>
 
           <p
             data-hero-occupied="ink"
-            className="mt-6 text-2xl font-medium tracking-tight text-zinc-600 md:text-4xl"
+            className="mt-4 text-xl font-medium tracking-tight text-zinc-600 sm:text-2xl md:mt-6 md:text-4xl"
           >
             {text.heroTagline}
           </p>
 
           <p
             data-hero-occupied="ink"
-            className="mt-8 max-w-md text-base font-light leading-relaxed text-zinc-400 md:text-lg"
+            className="mt-4 max-w-md text-sm font-light leading-relaxed text-zinc-400 sm:text-base md:mt-8 md:text-lg"
           >
             {text.heroSubline}
           </p>
 
           <div
             data-hero-occupied="ink"
-            className="pointer-events-auto mt-10 flex flex-wrap items-center gap-4"
+            className="pointer-events-auto mt-4 flex flex-wrap items-center gap-4 md:mt-10"
           >
             <Button href={cvHref} download={text.linkCV} icon={FiDownload}>
               {text.downloadCV}
@@ -201,7 +196,12 @@ const Hero = ({ text, isEn, onLangChange }) => {
             consciente de liberá-lo (o vidro admitiria) e ela foi revertida — a esfera saía
             menor e cortada pela moldura, que é pior do que sair fora do centro. */}
         <div data-hero-occupied className="absolute bottom-0 right-12 z-30 hidden lg:block">
-          <HeroCalibration params={params} onChange={setParams} className="animate-fade-in" />
+          <HeroCalibration
+            params={params}
+            onChange={setParams}
+            text={text}
+            className="animate-fade-in"
+          />
         </div>
       </div>
     </section>

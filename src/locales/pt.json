@@ -7,6 +7,16 @@
   "codeButton": "Código",
   "linkCV": "Leandro_Sales_Desenvolvedor_Fullstack.pdf",
 
+  "calibTitle": "Calibração do Sistema",
+  "calibDistortion": "Dinâmica de Fluxo",
+  "calibThreads": "Threads de Processamento",
+  "calibClock": "Taxa de Clock",
+  "calibDensity": "Densidade",
+  "calibEnergy": "Perfil de Energia",
+  "calibColorOrange": "Laranja",
+  "calibColorBlue": "Azul",
+  "calibColorGreen": "Verde",
+
   "role": "Engenheiro de Software Full Stack",
   "heroTagline": "Disciplina e performance.",
   "heroSubline": "Full Stack de ponta a ponta: React, Next.js, React Native, Node.js, Python e TypeScript.",

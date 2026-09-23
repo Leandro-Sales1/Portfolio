@@ -9,11 +9,14 @@ import Button from "../ui/Button";
  * mas SEM o formulário de waitlist — no template aquele input não tem handler
  * nenhum, e "entre na lista de espera" não significa nada para um portfólio.
  * No lugar, título + subtítulo + os links sociais reais + o CV.
+ *
+ * Padding vertical −2rem em 2026-09-23, o mesmo corte do `Section.jsx` (era
+ * `py-24 md:py-32`). O horizontal não foi tocado.
  */
 const Contact = ({ text }) => (
   <section
     id="contato"
-    className="bg-mesh relative z-20 flex flex-col items-center overflow-hidden border-b border-white/5 px-6 py-24 text-center md:px-12 md:py-32"
+    className="bg-mesh relative z-20 flex flex-col items-center overflow-hidden border-b border-white/5 px-6 py-16 text-center md:px-12 md:py-24"
   >
     <div className="grid-overlay pointer-events-none absolute inset-0 opacity-20" />
 

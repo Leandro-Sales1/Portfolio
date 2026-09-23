@@ -46,13 +46,17 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 /**
  * Amostrador compartilhado pelas duas buscas: dado um ponto, o raio do maior círculo
- * centrado nele que não cruza nada.
+ * centrado nele que não cruza nada — e a distância até o obstáculo mais próximo, sozinha.
  *
  * O raio de um ponto é a distância até o que estiver MAIS PERTO: as bordas do container ou
  * qualquer caixa ocupada (inflada por `margin`). Retângulos de tamanho zero são elementos
  * `display: none` (o painel abaixo de 1024px, por exemplo): medi-los criaria um obstáculo
  * fantasma no canto superior esquerdo. O mesmo vale para as coordenadas: um ponto devolvido
  * pelas duas buscas nunca cruza um retângulo, nem com a folga descontada.
+ *
+ * Devolve `{x, y, radius, obstacle}`, onde `obstacle` é a distância à caixa mais próxima
+ * (na mesma régua, com a `margin` já somada) sem considerar as bordas — é o que o teto da
+ * nuvem precisa para saber até onde pode crescer.
  */
 const makeSampler = (width, height, occupiedRects, margin) => {
   const blocked = occupiedRects
@@ -66,8 +70,20 @@ const makeSampler = (width, height, occupiedRects, margin) => {
 
   return (x, y) => {
     let radius = Math.min(x, width - x, y, height - y);
-    for (const rect of blocked) radius = Math.min(radius, distanceToRect(x, y, rect));
-    return { x, y, radius };
+    let obstacle = Infinity;
+    for (const rect of blocked) {
+      const distance = distanceToRect(x, y, rect);
+      if (distance < obstacle) obstacle = distance;
+      if (distance < radius) radius = distance;
+    }
+    // DOIS NÚMEROS, não um. `radius` é o maior círculo livre (o que o vão dá). `obstacle`
+    // é só a distância até o retângulo mais próximo, na mesma régua (`margin` somada),
+    // ignorando as bordas do container — e existe porque nem toda tinta da esfera cabe
+    // no círculo reservado: a NUVEM cresce com o slider de distorção e passa dele. Quem
+    // precisa saber onde o obstáculo está, e não só onde o vão termina, é o teto da
+    // nuvem (`radiusWithinGap`, no `screenBudget.js`). `Infinity` quando não há nenhum
+    // retângulo: aí não há obstáculo, e o vão é limitado só pelas bordas.
+    return { x, y, radius, obstacle: obstacle + margin };
   };
 };
 
@@ -93,8 +109,9 @@ const makeSampler = (width, height, occupiedRects, margin) => {
  * @param {number} height         altura do container, em px
  * @param {Array<{left,right,top,bottom}>} occupiedRects  caixas já ocupadas, em px
  * @param {{columns?: number, rows?: number, margin?: number}} [options]
- * @returns {{x: number, y: number, radius: number} | null}
- *          centro do maior círculo livre e o raio que cabe nele
+ * @returns {{x: number, y: number, radius: number, obstacle: number} | null}
+ *          centro do maior círculo livre, o raio que cabe nele e a distância ao
+ *          obstáculo mais próximo (na mesma régua, `margin` incluída)
  */
 export const findFreeSpot = (
   width,
@@ -159,7 +176,7 @@ export const findFreeSpot = (
  * COMO BUSCA. Dois passos:
  *   1. o maior círculo (o mesmo esqueleto do `findFreeSpot`);
  *   2. uma descida pela borda do viável — do maior círculo em direção ao centro, aceitando só
- *      os passos que mantêm `raio >= piso` e chegam mais perto do centro. Quando nenhuma
+ *      os passos que mantêm `raio >= piso` e chegam MAIS PERTO do centro. Quando nenhuma
  *      direção serve, o passo cai à metade; quando nenhuma serve nem com meio pixel, parou.
  *
  * A alternativa óbvia (varrer uma grade e escolher o candidato mais central que alcance o
@@ -168,6 +185,22 @@ export const findFreeSpot = (
  * (o máximo está nela por definição) e anda até onde ela deixa. Verificada contra força bruta
  * de 800×640 pontos por viewport em seis resoluções (500×714 a 1904×984): o ponto devolvido
  * fica a no máximo 3px do ótimo, e nenhum cruza um retângulo em nenhum caso.
+ *
+ * A DESCIDA NÃO TEM DESEMPATE PARA A DIREITA, e isso é uma correção, não um esquecimento. A
+ * primeira versão usava aqui o mesmo `closer` das buscas de tamanho (com a tolerância de 1px
+ * que prefere o ponto mais à direita). Numa descida isso não é desempate: é autorização para
+ * dar um passo que se AFASTA do centro, e como cada passo é reavaliado, ele CATRATEIA. Medido
+ * em 2560×1440 — a tela em que o dono reclamou que "a esfera aparece à direita" —, a descida
+ * chegava ao ponto mais central (1294, 586), custo 134 do centro, e dali andava para a direita
+ * ~0,5px por passo até esgotar o orçamento de movimentos em (1489, 608), custo 237. Com a
+ * melhora estrita o resultado é o mesmo ponto em todas as viewports de até 1920px (a tolerância
+ * nunca chegava a ser usada ali) e ~60–110px mais perto do centro acima disso.
+ *
+ * O `budget` por tamanho de passo existe pelo mesmo motivo: numa faixa LONGA e plana (as telas
+ * largas) os ganhos por passo são minúsculos mas nunca falham, então o passo nunca cairia e o
+ * laço só acabaria por esgotar um orçamento GLOBAL — deixando a resposta onde o passeio parou,
+ * que é o mecanismo descrito acima. Com o limite por passo, o passo afina e o resultado é
+ * polido no lugar.
  *
  * Devolve `null` quando nem o maior círculo alcança o piso — quem chama fica com o
  * `findFreeSpot`, que é o comportamento certo: melhor uma esfera fora do centro do que uma
@@ -182,7 +215,7 @@ export const findFreeSpot = (
  *        perto do centro (1 = nunca troca tamanho por centro, 0 = centra a qualquer preço);
  *        `minRadius` é um piso ABSOLUTO em px, para o caso de o maior vão ser menor que o
  *        tamanho mínimo aceitável.
- * @returns {{x: number, y: number, radius: number} | null}
+ * @returns {{x: number, y: number, radius: number, obstacle: number} | null}
  */
 export const findSpotNearest = (
   width,
@@ -194,13 +227,9 @@ export const findSpotNearest = (
 
   const sample = makeSampler(width, height, occupiedRects, margin);
   const cost = (spot) => Math.hypot(spot.x - width / 2, spot.y - height / 2);
-  // Empate técnico resolvido para a direita, como no `findFreeSpot`, para a esfera não pular
-  // de lado quando dois pontos são equivalentemente centrais.
-  const closer = (candidate, incumbent) => {
-    if (!incumbent) return true;
-    if (cost(candidate) < cost(incumbent) - 0.05) return true;
-    return Math.abs(cost(candidate) - cost(incumbent)) <= 1 && candidate.x > incumbent.x;
-  };
+  // O desempate para a direita mora SÓ aqui (o `closer` que a descida usava saiu — ver a nota
+  // sobre a catraca no comentário da função). Aqui ele é legítimo: é escolha entre pontos
+  // equivalentes, não um passo de caminhada.
   const wider = (candidate, incumbent) => {
     if (!incumbent || candidate.radius > incumbent.radius + 0.05) return candidate;
     if (Math.abs(candidate.radius - incumbent.radius) <= 1 && candidate.x > incumbent.x) {
@@ -242,12 +271,15 @@ export const findSpotNearest = (
   if (widest.radius < floor) return null;
 
   // Passo 2: desce pela borda do viável em direção ao centro. As 16 direções são medidas em
-  // relação à direção do centro (e não aos eixos da tela), então a direção "reto para o centro"
-  // está sempre na lista — é o caminho que a faixa viável costuma seguir.
+  // relação à direção do centro A PARTIR DO PONTO ATUAL (e não aos eixos da tela, nem à direção
+  // do ponto de partida): a direção "reto para o centro" está sempre na lista e a comba gira
+  // com a caminhada. Aceita só quem chega mais perto do centro — melhora ESTRITA, sem a
+  // tolerância de 1px (é ela que catrateia para longe; ver o comentário da função).
   let current = widest;
   let step = Math.max(width, height) / 8;
-  const towardCenter = Math.atan2(height / 2 - current.y, width / 2 - current.x);
-  for (let move = 0; move < 240 && step > 0.5; move += 1) {
+  let budget = 32;
+  while (step > 0.5) {
+    const towardCenter = Math.atan2(height / 2 - current.y, width / 2 - current.x);
     let best = null;
     for (let arm = 0; arm < 16; arm += 1) {
       const angle = towardCenter + (arm * Math.PI) / 8;
@@ -256,13 +288,15 @@ export const findSpotNearest = (
         clamp(current.y + Math.sin(angle) * step, 0, height)
       );
       if (candidate.radius < floor) continue;
-      if (closer(candidate, best)) best = candidate;
+      if (!best || cost(candidate) < cost(best)) best = candidate;
     }
-    if (best && closer(best, current)) {
+    if (best && cost(best) < cost(current) - 0.05 && budget > 0) {
       current = best;
+      budget -= 1;
       continue;
     }
     step /= 2;
+    budget = 32;
   }
 
   return current;

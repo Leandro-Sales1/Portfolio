@@ -30,8 +30,14 @@ export const CAMERA_Z = 18;
  * animação vai de -1 a 1). Exportado porque a folga de paralaxe lá embaixo é uma CONTA sobre
  * este número: se um dia a excursão mudar, a folga tem que mudar junto, e com a constante
  * compartilhada isso acontece sozinho.
+ *
+ * Era 0,5 e cedeu a 0,4 em 2026-09-23, quando o dono pediu o conjunto maior: cada 0,1 custa
+ * ~8,5px de raio no monitor dele (a parcela é `PARALLAX_WORLD · fPx / distance`, ~h/42 com o
+ * `CAMERA_FOV` de 50°). A excursão de ±34px num hero de 1440px — ~69px de varredura de ponta a
+ * ponta — continua legível; a alternativa era cortar o respiro, que é o que de fato separa a
+ * órbita do texto.
  */
-export const PARALLAX_WORLD = 0.5;
+export const PARALLAX_WORLD = 0.4;
 
 /** O mesmo limiar do `lg` do Tailwind — abaixo dele o grupo recua em `z` (ver `recoilZ`). */
 const RECOIL_WIDTH = 1024;
@@ -41,9 +47,16 @@ const RECOIL_Z = -6;
  * Folga de respiro entre a esfera e o que estiver em volta. Eram 8px enquanto a esfera
  * desenhava ~63% do vão reservado (a sobra de 34% fazia as vezes de respiro); com a escala
  * corrigida por `envelopeWorldRadius` a tinta encosta mesmo no limite, e aí "encostar" volta a
- * ler como sobreposição. 24px é o mínimo que separa a órbita do texto.
+ * ler como sobreposição. 24px era o mínimo que separava a órbita do texto.
+ *
+ * CAIU PARA 16px em 2026-09-23, e a diferença em relação à tentativa anterior de encurtar a
+ * folga é o `cloudRatio` (ver `radiusWithinGap`): com o topo do slider em 1,0 a guarda só
+ * sustentava `folga / 0,1333` de raio, e aí cortar respiro custava 20% do raio em 3440px. Com o
+ * topo em 0,8 a mesma folga sustenta `folga / 0,1` — 33% mais raio — e cortar 8px de respiro não
+ * faz a guarda morder em tela nenhuma (medido: 2% em 5120 e em 7680, contra 3% antes). Ainda são
+ * 16px de folga REAL medida no layout, com a animação de entrada e a paralaxe contadas à parte.
  */
-const BREATHING_PX = 24;
+const BREATHING_PX = 16;
 /**
  * Parcela da animação de entrada: o `animate-fade-in` do Hero começa em `translateY(8px)` e a
  * medição acontece no mount, com a animação ainda no quadro 0%. Nos elementos ancorados no
@@ -70,22 +83,35 @@ const CAP_RATIO = 0.42;
 
 /**
  * Quanto do MAIOR vão livre o posicionamento centrado pode custar, para a esfera chegar mais
- * perto do centro da tela. `0,9` = aceita perder até 10% do raio; `1` = nunca troca tamanho por
+ * perto do centro da tela. `0,8` = aceita perder até 20% do raio; `1` = nunca troca tamanho por
  * centralização (mantém exatamente a composição do maior vão); `0` = centra a qualquer preço.
  *
  * Existe porque as três exigências do dono — sem sobreposição, tamanho importante, centro —
  * não podem valer ao mesmo tempo, e a ordem de prioridade é dele: sobreposição é restrição
  * dura, tamanho vem antes de posição, e o centro é a que cede. Num hero de duas colunas o meio
  * da tela é um corredor entre o texto e o painel: em 1409×804 o maior círculo é ∅360 e o maior
- * centrado é ∅198, então centrar sem piso custaria 45% do tamanho. Com `0,9` a esfera sai em
- * ∅324 — 40% da altura — já deslocada para o centro em `x`.
+ * centrado é ∅198, então centrar sem piso custaria 45% do tamanho. Com `0,8` a esfera sai em
+ * ∅288 — 36% da altura — já deslocada para o centro em `x`.
+ *
+ * POR QUE 0,8 E NÃO 0,9. O piso não desloca a faixa viável: ele decide se ela EXISTE no centro.
+ * A bolsa central é uma porteira entre duas quinas — o canto inferior esquerdo da nav e a borda
+ * de cima do `h1` — e no desktop largo ela é estreita. Medido no DOM real em 2529×1344 (a
+ * proporção da tela do dono): a porteira admite no máximo um círculo de raio 341px, que é
+ * **0,84** do maior vão (408px, no corredor da direita, atrás do painel). Com `0,9` ela está
+ * FECHADA: não existe ponto viável no centro, e uma busca correta — a descida não tem defeito
+ * aqui — fica no corredor da direita, com a esfera em 57–80% da largura. Era exatamente a
+ * queixa "a esfera aparece à direita da tela e não centralizada". O ponto mais central que
+ * ainda satisfaz `0,9` fica a 0,1–0,3px do piso: é a própria fronteira, não um lugar para pôr
+ * a esfera. Com `0,8` a porteira abre, a descida acha o ótimo real (≤ 6px de perda contra força
+ * bruta em 12 viewports, de 485×748 a 5120×1440) e a esfera fica em 50% da largura. O preço é o
+ * tamanho: em 2529×1344 o raio cai de 375 para 333 (−11%), que ainda é metade da altura do hero.
  *
  * É DEVOLVIDO como número, e não aplicado aqui: quem sabe o raio do maior vão é o
  * `ThreeCanvas` (que chamou `findFreeSpot`), e esta função não conhece layout. O que mora aqui
  * é a política (quanto vale a pena perder), que é decisão de produto; o mecanismo (a busca)
  * mora no `freeSpot.js`.
  */
-const CENTER_SIZE_FLOOR = 0.9;
+const CENTER_SIZE_FLOOR = 0.8;
 /**
  * Piso para a esfera aparecer, como fração da MENOR dimensão. Abaixo disso ela é escondida em
  * vez de virar um ponto perdido no meio da tela. O piso de 48px preserva o comportamento que já
@@ -154,8 +180,9 @@ export const viewportBudget = (width, height, { hasPointer = true, devicePixelRa
       BREATHING_PX +
       ENTRANCE_PX +
       // A câmera anda até ±PARALLAX_WORLD de mundo atrás do mouse, e o grupo anda junto no
-      // sentido oposto; o quanto isso é em PIXELS é `fPx · PARALLAX_WORLD / distance` (~27px
-      // num hero de 900px, ~43px num de 1440 — nada perto dos 8px que a folga antiga supunha).
+      // sentido oposto; o quanto isso é em PIXELS é `fPx · PARALLAX_WORLD / distance` (~21px
+      // num hero de 900px, ~34px num de 1440 — nada perto dos 8px que a folga antiga supunha,
+      // e era ~43px em 1440 quando a excursão era 0,5).
       // Em telas de toque não há paralaxe nenhuma para reservar: sem `hover`, o listener de
       // mousemove não existe e `mouseX` fica em 0.
       (hasPointer ? (PARALLAX_WORLD * fPx) / distance : 0),
@@ -220,6 +247,76 @@ export const envelopeWorldRadius = ({ usedPx, fPx, distance, offsetPx = 0 }) => 
     else hi = mid;
   }
   return (lo + hi) / 2;
+};
+
+/**
+ * Maior raio reservado cuja NUVEM ainda não cruza o obstáculo mais próximo.
+ *
+ * POR QUE ISTO EXISTE. O círculo que o vão reserva é a régua das ÓRBITAS, mas a tinta que o
+ * olho lê como esfera não é só ela: a nuvem de pontos cresce com o slider "Flux Dynamics" e
+ * recebe ainda o empurrão do mouse, então no extremo do slider o raio LOCAL dela chega a
+ * `cloudRatio` vezes o das órbitas. Quem absorve esse excesso é a folga de `marginPx` — que é
+ * ABSOLUTA (16px de respiro + 8px de animação + a paralaxe, ~h/45). Como o excesso é
+ * RELATIVO (proporcional ao raio) e a folga é absoluta, eles só se cobrem enquanto a esfera
+ * é pequena, e o teto é `folga / (cloudRatio − 1)`: medido, com o `cloudRatio` em 1,10 (o de
+ * hoje) isso dá 10× a folga, e a nuvem só cruzaria o texto ou o painel no extremo do slider
+ * numa tela de 8K — e "sem sobreposição" é a restrição dura do dono. Aqui o raio cede.
+ *
+ * A CONTA, sem inversa. `envelopeWorldRadius` (`h`) é crescente no raio reservado, então
+ * "a silhueta da nuvem termina antes do obstáculo" — `h⁻¹(cloudRatio · h(usedPx)) <=
+ * obstaclePx` — é o mesmo que `cloudRatio · h(usedPx) <= h(obstaclePx)`, tudo em mundo.
+ * Uma bisseção só, porque o lado direito não depende de `usedPx`: o raio de mundo que a
+ * nuvem pode ter é `h(obstaclePx) / cloudRatio`. A direção radial é a do pior caso (a
+ * projeção fora do eixo é uma elipse alongada na direção radial), então medir o obstáculo
+ * em 2D contra ela é conservador — nunca deixa passar.
+ *
+ * QUANDO NÃO MUDA NADA. Na imensa maioria das telas a nuvem cabe e a função devolve o
+ * `ceilingPx` intacto: a composição aprovada no telefone, no tablet e no desktop sai
+ * idêntica. Ela só morde onde a alternativa seria a nuvem encostar em algo — e é por isso
+ * que a régua do tamanho continua sendo o vão e as órbitas, não a nuvem.
+ *
+ * E ELA É ALCANÇÁVEL PELO `cloudRatio`: `!(cloudRatio > 1)` faz a função voltar intacta, e o
+ * teto `folga / (cloudRatio − 1)` cresce sem limite quando o `cloudRatio` desce para 1. Foi
+ * assim que a folga ficou barata em 2026-09-23 — o topo do slider em 0,8 leva o `cloudRatio` de
+ * 1,1333 para 1,100, o teto de 7,5× para 10× a folga, e é a mesma folga que passa a sustentar um
+ * raio maior (a composição aprovada no monitor do dono: ∅666 → ∅692 com a nuvem intacta em 100%).
+ * Quem mexer no topo do slider precisa saber que está mexendo aqui também.
+ *
+ * @param {{ceilingPx: number, obstaclePx: number, fPx: number, distance: number,
+ *          offsetPx?: number, cloudRatio: number}} args
+ *        `ceilingPx` é o raio que o vão (e o teto) permitem; `obstaclePx` é a distância ao
+ *        obstáculo mais próximo — o `obstacle` devolvido pelas buscas do `freeSpot.js`;
+ *        `cloudRatio` é o raio máximo da nuvem em mundo LOCAL dividido pelo raio das
+ *        órbitas (contrato com o shader, ver `ThreeCanvas.jsx`).
+ * @returns {number} raio reservado, em px (0 se não couber nada)
+ */
+export const radiusWithinGap = ({
+  ceilingPx,
+  obstaclePx,
+  fPx,
+  distance,
+  offsetPx = 0,
+  cloudRatio,
+}) => {
+  if (!(ceilingPx > 0)) return 0;
+  if (!Number.isFinite(obstaclePx) || !(cloudRatio > 1)) return ceilingPx;
+
+  const h = (usedPx) => envelopeWorldRadius({ usedPx, fPx, distance, offsetPx });
+  // Raio de MUNDO que a nuvem pode ter sem passar do obstáculo. É `h(obstaclePx)` (não
+  // `h(obstaclePx - ceilingPx)`): a régua é a distância do CENTRO da esfera ao obstáculo,
+  // e a silhueta é medida a partir do mesmo centro. Comparar com a folga em px encolheria
+  // a esfera em toda tela, que é o erro que esta linha existe para não repetir.
+  const room = h(obstaclePx) / cloudRatio;
+  if (h(ceilingPx) <= room) return ceilingPx;
+
+  let lo = 0;
+  let hi = ceilingPx;
+  for (let step = 0; step < 30; step += 1) {
+    const mid = (lo + hi) / 2;
+    if (h(mid) <= room) lo = mid;
+    else hi = mid;
+  }
+  return lo;
 };
 
 export default viewportBudget;

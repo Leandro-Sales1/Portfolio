@@ -1,4 +1,5 @@
-import { FaReact, FaNodeJs } from "react-icons/fa";
+import { FaReact, FaNodeJs, FaAws } from "react-icons/fa";
+import { RiOpenaiFill } from "react-icons/ri";
 import {
   SiTypescript,
   SiJavascript,
@@ -11,13 +12,12 @@ import {
   SiGraphql,
   SiFirebase,
   SiDocker,
-  SiAmazonaws,
   SiGit,
   SiJest,
   SiCypress,
-  SiOpenai,
+  SiClaudecode,
 } from "react-icons/si";
-import { TbBrandReactNative, TbSparkles } from "react-icons/tb";
+import { TbBrandReactNative } from "react-icons/tb";
 
 /**
  * As 20 techs do portfólio, em ordem de exibição (o grid fecha 4 linhas exatas de
@@ -35,17 +35,22 @@ import { TbBrandReactNative, TbSparkles } from "react-icons/tb";
  * marca é. O `group-hover:drop-shadow-[...currentColor]` + `scale-110` do TechsGrid
  * é que dão feedback visível nelas, já que a troca de cor não muda nada.
  *
- * DUAS TECHs SEM GLIFO DE MARCA em `react-icons@5.0.1`:
- * - **Claude** — `SiClaude` só existe a partir do react-icons 5.4, e **subir a lib
- *   não compensa**: o 5.7.0 remove `SiAmazonaws` (que fica no grid) e `SiOpenai`,
- *   e continua sem glifo de Codex. Verificado no runtime dos dois pacotes em
- *   2026-09-23, não no `index.d.ts`. Fica `TbSparkles` (glifo genérico de IA) com a
- *   **cor de marca do Claude** (`#D97757`, o terracota oficial) — a cor é fiel, o
- *   desenho não. Se um dia a lib ganhar o glifo, troque só o `Icon`.
- * - **Codex** — não existe glifo, então usa `SiOpenai` (a marca dona), mesmo
- *   critério que faz o Gemini aparecer com `SiGoogle`.
+ * A LIB SUBIU PARA 5.7.0 EM 2026-09-23, a pedido do dono — ele pediu
+ * `import { SiClaudecode } from "react-icons/si"`, e **nem `SiClaudecode` nem `SiClaude`
+ * existem na 5.0.1**: nenhuma versão anterior a 5.7.0 traz o glifo do Claude. O preço do
+ * upgrade foi medido no RUNTIME dos dois pacotes (não no `index.d.ts`, que só lista nomes):
+ * o Simple Icons **removeu `SiAmazonaws` e `SiOpenai`** (e `SiPlaywright`, que já não estava
+ * na lista), então dois tiles trocaram de conjunto —
+ * - **AWS** → `FaAws` (Font Awesome, o mesmo conjunto do React e do Node);
+ * - **Codex** → `RiOpenaiFill` (Remix Icon), mantendo a marca dona, mesmo critério que faz o
+ *   Gemini aparecer com `SiGoogle`.
+ * Todos os outros 17 ícones sobreviveram ao upgrade (conferido um a um).
  *
- * `Playwright` também sumiu do react-icons 5.7.0 — mais um motivo para não subir a lib.
+ * **Até então o tile do Claude usava `TbSparkles`** (glifo genérico de IA) com a cor de marca
+ * do Claude, `#D97757`, porque a 5.0.1 não tinha glifo nenhum da Anthropic. Hoje é o desenho
+ * oficial. O rótulo do tile é "Claude" e o glifo escolhido é o do **Claude Code**
+ * (`SiClaudecode`, o que o dono pediu) — a 5.7.0 também traz `SiClaude`, o do produto, e
+ * trocar é uma palavra se ele preferir.
  */
 export const TECHS = [
   { name: "React", Icon: FaReact, color: "#61DBFB" },
@@ -64,11 +69,11 @@ export const TECHS = [
   { name: "GraphQL", Icon: SiGraphql, color: "#E10098" },
   { name: "Firebase", Icon: SiFirebase, color: "#FFCA28" },
   { name: "Docker", Icon: SiDocker, color: "#2496ED" },
-  { name: "AWS", Icon: SiAmazonaws, color: "#FF9900" },
+  { name: "AWS", Icon: FaAws, color: "#FF9900" },
 
   { name: "Git", Icon: SiGit, color: "#F05032" },
   { name: "Jest", Icon: SiJest, color: "#C21325" },
   { name: "Cypress", Icon: SiCypress, color: "#69D3A7" },
-  { name: "Claude", Icon: TbSparkles, color: "#D97757" },
-  { name: "Codex", Icon: SiOpenai, color: "#412991" },
+  { name: "Claude", Icon: SiClaudecode, color: "#D97757" },
+  { name: "Codex", Icon: RiOpenaiFill, color: "#412991" },
 ];

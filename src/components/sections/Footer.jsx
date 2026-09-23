@@ -23,11 +23,23 @@ const NAV_LINK =
  *
  * `lg:gap-12` (não `lg:gap-8`): o `gap-12` base era reduzido justamente no maior
  * breakpoint, o que encolhia o respiro onde havia mais espaço.
+ *
+ * `md:justify-items-center` (2026-09-23, pedido do dono: "no footer quando estiver
+ * com grid-cols-2 aplique justify-items: center"). Vale de `md` para cima, que é onde o
+ * grid está em duas colunas — `justify-items` não muda nada em uma coluna (o item já
+ * ocupa a largura toda), então o mesmo efeito aconteceria deixando a classe sem prefixo.
+ * Com ela as duas colunas passam a ter largura de conteúdo e ficam centradas na célula
+ * (a marca + o texto do cargo à esquerda, a lista de anchors à direita); sem ela, as duas
+ * caixas eram esticadas e o conteúdo de cada uma ficava colado na borda esquerda dela.
+ *
+ * O padding do topo caiu de `pt-16` para `pt-8` no mesmo dia (−2rem, o corte das seções);
+ * o `pb-8` FICOU como estava — são 2rem exatos, e cortar 2rem ali zera e encosta a linha
+ * de copyright na borda inferior da página.
  */
 const Footer = ({ text }) => (
   <footer className="relative z-20 bg-[#050505] pb-8 pt-16">
     <Container>
-      <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:gap-12">
+      <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 md:justify-items-center lg:gap-12">
         <div className="flex flex-col items-start">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-6 w-6 items-center justify-center rounded bg-zinc-100 font-mono text-[10px] font-medium text-zinc-950 shadow-sm">

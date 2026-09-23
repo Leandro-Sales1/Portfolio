@@ -8,8 +8,62 @@ import {
   CAMERA_Z,
   PARALLAX_WORLD,
   envelopeWorldRadius,
+  radiusWithinGap,
   viewportBudget,
 } from "../../utils/screenBudget";
+
+/**
+ * Raio de mundo da nuvem em REPOUSO (slider `distortion` em 0) e a subdivisão do icosaedro.
+ *
+ * A esfera cresceu TRÊS vezes em 2026-09-23, a pedido do dono ("pode aumentar um pouco o tamanho
+ * da esfera", depois "ainda dá para aumentar um pouco mais", e por fim "ainda dá para aumentar um
+ * pouco mais a esfera **e aumente as órbitas também** … quero que a esfera com as órbitas ocupem
+ * o maior espaço possível de tela"). A alavanca NÃO é o vão (que já está no teto): é o quanto a
+ * bola desenha DENTRO do círculo que o `radiusWithinGap` reserva. O que a guarda reserva é o PIOR
+ * CASO da nuvem, `base + empurrão + topo do slider`, e o slider e o empurrão são orçamento que se
+ * pode ceder para o raio-base:
+ *
+ *   4,0 + 0,8 + 2,0 = 6,8   (o original)   → repouso 77% do círculo
+ *   4,8 + 0,8 + 1,2 = 6,8   (+17%)         → repouso 90%
+ *   5,4 + 0,4 + 1,0 = 6,8   (+11%)         → repouso 100%
+ *   5,4 + 0,4 + 0,8 = 6,6   (atual)        → repouso 100% E o círculo maior
+ *
+ * AS TRÊS PRIMEIRAS TROCAM DENTRO DA SOMA (6,8), e por isso o `cloudRatio` é idêntico nelas: a
+ * guarda devolve exatamente os mesmos números em toda tela, o pior caso não cresce (∅755 e 28px de
+ * folga no monitor do dono, igual) e o raio reservado não muda uma vírgula — o que muda é só o
+ * repouso, e a bola passa a ENCHER o círculo reservado, que é o mesmo círculo das órbitas.
+ *
+ * A QUARTA NÃO: ela BAIXA A SOMA. Com 100% de repouso a bola já não cresce mais dentro do círculo,
+ * então o que cresce é o próprio círculo — e ele sai da folga (`marginPx`), que até aqui era
+ * intocável porque encurtá-la fazia a guarda morder em tela larga. O teto da guarda é
+ * `folga / (cloudRatio − 1)` (a conta está em `radiusWithinGap`): com o `cloudRatio` em 1,1333 a
+ * folga valia só 7,5× ela mesma de raio, e cortar 16px de folga custava 20% do raio em 3440px.
+ * Baixando o TOPO do slider para 0,8 o `cloudRatio` cai para 1,100 e o mesmo teto vira 10× a
+ * folga: a folga de 16px passa a ser grátis em toda tela (a guarda morde 2% em 5120 e em 7680, os
+ * mesmos casos de antes, e nada em 3440/3840), e o ganho é o círculo — medido no monitor do dono,
+ * ∅666 → ∅692, com a bola em 100% dele. As duas alavancas ficam registradas aqui: dentro da soma
+ * vale o empurrão, e fora dela o topo do slider compra folga.
+ *
+ * O preço já pago é o empurrão do vértice sob o cursor (0,8 → 0,4, ver `CURSOR_PUSH`); o preço
+ * desta vez é o topo do slider (1,0 → 0,8, que segue com 0,6 — o padrão — a 75% da pista). O que
+ * NÃO se pode é subir o raio-base sem ceder um dos dois: aí a soma passa de 6,6 e a guarda encolhe
+ * a esfera em 3440/3840/5120.
+ */
+const CLOUD_BASE_RADIUS = 5.4;
+// O ruído é amostrado na POSIÇÃO LOCAL (`pos * noiseFreq`): com o raio-base maior, a mesma
+// frequência leria outra região do campo e o padrão de manchas aprovado mudaria de desenho. A
+// frequência desce na mesma proporção (0,8 no raio 4,0) para o repouso continuar o MESMO
+// desenho, só maior.
+const CLOUD_NOISE_FREQ = (0.8 * 4.0) / CLOUD_BASE_RADIUS;
+// A densidade da nuvem é N por 4πR²: com o raio maior e o mesmo número de pontos o enxame
+// ficaria mais rarefeito (e o AdditiveBlending menos brilhante). A subdivisão sobe na mesma
+// proporção (o número de pontos vai com o quadrado dela) para a bola ser a mesma, maior.
+const CLOUD_DETAIL = 27; // = 20 · 5,4/4,0
+// Empurrão LOCAL do vértice sob o cursor (`interaction`), em mundo — a amplitude da bolha que
+// segue o mouse. Era 0,8 e cedeu metade para o raio-base subir sem mexer no pior caso (ver o
+// bloco do `CLOUD_BASE_RADIUS`). Interpolado no shader de propósito: é o TERCEIRO termo da soma
+// que o `CLOUD_MAX_RATIO` fecha, e um número solto dentro do GLSL seria o único sem rastro.
+const CURSOR_PUSH = 0.4;
 
 const vertexShader = `
   uniform float uTime;
@@ -72,7 +126,7 @@ const vertexShader = `
   void main() {
       vec3 pos = position;
 
-      float noiseFreq = 0.8;
+      float noiseFreq = ${CLOUD_NOISE_FREQ.toFixed(4)};
       float noiseAmp = uDistortion;
       float noise = snoise(vec3(pos.x * noiseFreq + uTime * 0.2, pos.y * noiseFreq, pos.z * noiseFreq));
 
@@ -82,7 +136,7 @@ const vertexShader = `
 
       float dist = distance(uMouse * 10.0, newPos.xy);
       float interaction = smoothstep(5.0, 0.0, dist);
-      newPos += normalize(pos) * interaction * 0.8;
+      newPos += normalize(pos) * interaction * ${CURSOR_PUSH.toFixed(2)};
 
       vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
       gl_Position = projectionMatrix * mvPosition;
@@ -208,8 +262,9 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
     const systemsGroup = new THREE.Group();
     scene.add(systemsGroup);
 
-    // detail 35 → 20: ~⅓ dos vértices, ainda visualmente suave.
-    const geometry = new THREE.IcosahedronGeometry(4.0, 20);
+    // A subdivisão vem de `CLOUD_DETAIL` (era 20; 35 → 20 foi um corte de vértices que o raio
+    // maior desfez em parte — ver o comentário da constante).
+    const geometry = new THREE.IcosahedronGeometry(CLOUD_BASE_RADIUS, CLOUD_DETAIL);
 
     uniformsRef.current = {
       uTime: { value: 0 },
@@ -238,14 +293,36 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
     const lineGroup = new THREE.Group();
     systemsGroup.add(lineGroup);
 
+    /**
+     * As ÓRBITAS — o que o dono pediu para "aumentar também, para que apareçam" (2026-09-23).
+     *
+     * ELAS NÃO APARECIAM POR COR, não por tamanho nem por posição. O material era `0x27272a`
+     * (zinc-800) com `opacity 0.5`: sobre o `#050505` do hero isso compõe ~rgb(22,22,27) — a 17
+     * níveis do fundo, invisível num fio de 1px, e nenhuma mudança de raio resolveria. Agora é
+     * `0x52525b` (zinc-600) a 0,75, que compõe ~rgb(63,63,69): 58 níveis acima do fundo, um fio
+     * de instrumento que se lê sem competir com o texto (a nuvem é `#d4d4d8`, 212).
+     *
+     * E ELAS NUNCA SÃO OCLUÍDAS PELA NUVEM: `particles` é `depthWrite: false` e `AdditiveBlending`,
+     * e o `lineGroup` entra DEPOIS dele no mesmo grupo, então as linhas são desenhadas por cima e
+     * visíveis mesmo onde a bola está densa. É por isso que elas não precisaram de vão: aumentar
+     * o raio delas só as afastaria da bola sem ganhar visibilidade nenhuma.
+     *
+     * O QUE "AUMENTAR" QUER DIZER AQUI. O raio delas em tela é `raio / ORBIT_RADIUS` do círculo
+     * reservado — a de fora É o círculo por construção. Então crescer as órbitas = crescer o
+     * círculo, e foi isso que a folga menor comprou (ver o bloco do `CLOUD_BASE_RADIUS`): no
+     * monitor do dono os três anéis saem ∅599/645/692 contra ∅577/622/666 antes, e o de fora
+     * passa a ser visível — a leitura de "esfera com órbitas" fica maior do que o número da bola
+     * sozinho sugere. Os raios agora se espaçam de 0,4 em 0,4 (5,2 / 5,6 / 6,0), em vez dos
+     * 5,2/5,5/6,0 de antes, para os três lerem como família e não como dois anéis colados.
+     */
     const createTechOrbit = (radius, rotation) => {
       const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, 2 * Math.PI, false, 0);
       const points = curve.getPoints(128);
       const geo = new THREE.BufferGeometry().setFromPoints(points);
       const mat = new THREE.LineBasicMaterial({
-        color: 0x27272a,
+        color: 0x52525b,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.75,
       });
       const orbit = new THREE.Line(geo, mat);
       orbit.rotation.x = rotation.x;
@@ -254,9 +331,11 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
       return orbit;
     };
 
+    // Ordem = velocidade de giro (`rotation.z += 0.003 * (índice + 1)` no RAF): o de fora fica
+    // por último para continuar sendo o mais rápido, como era antes.
     const orbits = [
-      createTechOrbit(5.5, { x: Math.PI / 2, y: 0 }),
       createTechOrbit(5.2, { x: Math.PI / 3, y: Math.PI / 6 }),
+      createTechOrbit(5.6, { x: Math.PI / 2, y: 0 }),
       createTechOrbit(6.0, { x: Math.PI / 1.8, y: Math.PI / 4 }),
     ];
 
@@ -276,28 +355,39 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
     // (`createTechOrbit(6.0)`), que é o que o olho lê como a esfera.
     //
     // É uma CONSTANTE de propósito, e não o raio vivo do grupo: a nuvem de pontos cresce com
-    // o slider `distortion` (4.0 do icosaedro + distortion + 0.8 do empurrão do vértice sob o
-    // cursor, até 6.8). Se a escala fosse `ρ / raioVivo`, arrastar "Flux Dynamics" de 0.6 para
-    // 2.0 faria as ÓRBITAS ENCOLHEREM 12% — o slider mudaria o tamanho da única coisa que se
+    // o slider `distortion` (5,4 do icosaedro + distortion + 0,4 do empurrão do vértice sob o
+    // cursor, até 6,6). Se a escala fosse `ρ / raioVivo`, arrastar "Flux Dynamics" de 0.6 para
+    // o topo faria as ÓRBITAS ENCOLHEREM — o slider mudaria o tamanho da única coisa que se
     // vê. Com a referência fixa o slider não mexe no tamanho, e por isso este componente não
     // precisa re-rodar `adjustLayout` quando `distortion` muda.
     //
-    // O excesso da nuvem no extremo do slider quase fica coberto, mas não inteiramente: a 100% de
-    // distortion ela chega a ~113% de `ORBIT_RADIUS` de mundo (4,0 do icosaedro + 2,0 do ruído +
-    // 0,8 do empurrão do vértice sob o cursor) e desenha ~15% de `usedPx` além do círculo
-    // reservado. Como o excesso é RELATIVO e o respiro do orçamento é ABSOLUTO (24px + 8px da
-    // animação), os dois só se equivaleriam por volta de `usedPx ≈ 210px` — e desde que a esfera
-    // foi para o centro da tela ela passa disso: medido projetando a casca externa, o excesso é de
-    // ~31px em 1024×768, ~43px em 1440×900 e ~69px em 2560×1440, ou seja, mais que o respiro em
-    // todo desktop. Quem absorve é a folga da PARALAXE (~27px num hero de 900px, ~43px num de
-    // 1440px), que existe exatamente para o deslocamento da câmera: o excesso só vira encosto com
-    // o ponteiro no canto E o slider no máximo E o ruído saturando no mesmo vértice do cursor.
-    // No valor padrão do slider (0,6) a nuvem fica a 79% do círculo e não há excesso NENHUM.
-    // É uma troca consciente: as ÓRBITAS ditam o círculo (ficam dentro dele por construção, e são
-    // o que o olho lê como a esfera), e a alternativa — os raios da nuvem ditando — encolheria as
-    // órbitas ~13% em todo viewport, que é justamente o defeito que a inversão da silhueta veio
-    // corrigir.
+    // O EXCESSO DA NUVEM. No topo do slider ela chega a 110% de `ORBIT_RADIUS` de mundo e
+    // desenha mais que isso além do círculo reservado (a inversão da silhueta é convexa, então
+    // +10% de raio de mundo dá mais de +10% de raio em tela). Como o excesso é RELATIVO
+    // (proporcional ao raio) e a folga de `marginPx` é ABSOLUTA (16px + 8px + a paralaxe,
+    // ~h/45), os dois só se cobrem enquanto a esfera é pequena: o excesso passa a folga quando
+    // o raio passa de ~40% da altura. Quem resolve é o
+    // `radiusWithinGap`: onde a nuvem cabe (praticamente toda tela) o raio não muda NADA, e
+    // onde não cabe ele cede o mínimo — em 5120×1440 e em 7680×4320 ele cede 2% (medido; são os
+    // mesmos casos de antes, quando cedia 3% com a folga maior), e a régua do tamanho continua
+    // sendo o vão e as órbitas.
     const ORBIT_RADIUS = 6.0;
+
+    /**
+     * Raio máximo da nuvem, em mundo LOCAL, dividido pelo raio das órbitas — o contrato com o
+     * shader, escrito uma vez: `CLOUD_BASE_RADIUS` (5,4) é o `IcosahedronGeometry`, `CURSOR_PUSH`
+     * (0,4) é o `interaction * ` do `gl_Position` (o empurrão do vértice sob o cursor) e
+     * `SLIDER_MAX_DISTORTION` (0,8) é o TOPO DO SLIDER "Flux Dynamics" do painel. Os três somam
+     * 6,6 (110,0% de `ORBIT_RADIUS`) e é essa SOMA que é o contrato, nos dois sentidos: subir o
+     * raio-base só é gratuito se o empurrão ou o topo cederem na mesma medida (o `CLOUD_MAX_RATIO`
+     * não muda e o `radiusWithinGap` devolve os mesmos números em toda tela), e BAIXAR a soma é o
+     * que torna a folga barata — o teto da guarda é `folga / (cloudRatio − 1)`, então 1,1333 → 1,100
+     * multiplica por 1,33 o raio que a mesma folga sustenta (é essa a alavanca de 2026-09-23 que
+     * aumentou as órbitas, ver o bloco do `CLOUD_BASE_RADIUS`). `uSize` não entra: ele só muda o
+     * `gl_PointSize`, não a posição dos vértices.
+     */
+    const SLIDER_MAX_DISTORTION = 0.8; // = SLIDERS[0].max no HeroCalibration
+    const CLOUD_MAX_RATIO = (CLOUD_BASE_RADIUS + CURSOR_PUSH + SLIDER_MAX_DISTORTION) / ORBIT_RADIUS;
 
     /**
      * Caixas que ocupam espaço no Hero, em px relativos ao container.
@@ -391,12 +481,18 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
      *      `floorRadiusPx` e `centerSizeFloor · raio do maior`. Devolvida, ela ganha; `null`,
      *      fica o maior vão.
      *
-     * Medido no DOM real em 1409×804: o maior círculo é ∅360 na faixa de cima (o texto ocupa a
-     * esquerda de baixo, o painel a direita de baixo) e o maior centrado é ∅198 — o meio da tela
-     * é um corredor entre os dois. Com `centerSizeFloor = 0,9` (perder no máximo 10% do raio) a
-     * esfera sai em ∅324, 40% da altura da tela, já deslocada para o centro em `x`. Centrar sem
-     * piso custaria 45% do tamanho, e é por isso que o piso existe: o dono quer a esfera
-     * "importante na exibição" antes de querer ela no centro.
+     * Medido no DOM real, o piso decide se a faixa viável EXISTE no centro — não só onde ela
+     * fica. A bolsa central é uma porteira entre duas quinas (o canto inferior esquerdo da nav e
+     * a borda de cima do `h1`) e no desktop largo ela é estreita: em 2529×1344 admite no máximo um
+     * círculo de raio 341px, que é 0,84 do maior vão (∅833, no corredor da direita, atrás do
+     * painel). Com o piso em `0,9` a porteira fica FECHADA e a esfera é empurrada para a direita
+     * (57% da largura em 2529×1344; 79% em 2560×1320, que é o monitor do dono com a moldura do
+     * navegador) — a queixa de que ela "aparece à direita da tela e não centralizada". Com `0,8`
+     * ela abre, e a esfera fica em 50% da largura. Em 1409×804 o maior círculo é ∅359 na faixa de
+     * cima (o texto ocupa a esquerda de baixo, o painel a direita de baixo) e a escolhida sai em
+     * ∅288, 36% da altura, já deslocada para o centro em `x`; centrar sem piso nenhum custaria
+     * 46% do tamanho — é por isso que o piso existe: o dono quer a esfera "importante na exibição"
+     * antes de querer ela no centro.
      *
      * O plano B (só o maior vão) é o que mantém COLUNA ÚNICA (telefone, tablet em retrato)
      * exatamente com a composição aprovada: ali o centro é o próprio bloco de texto, nenhuma
@@ -434,14 +530,30 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
       });
       const spot = centeredSpot ?? bestSpot;
 
-      if (!spot || spot.radius < floorRadiusPx) {
+      if (!spot) {
+        systemsGroup.visible = false;
+        return;
+      }
+
+      const offsetPx = Math.hypot(spot.x - width / 2, spot.y - height / 2);
+      // O vão e o teto dizem quanto cabe às ÓRBITAS; o `radiusWithinGap` confere se a NUVEM
+      // (no extremo do slider, que é maior que as órbitas) ainda cabe no mesmo lugar. Onde ela
+      // cabe — praticamente toda tela —, ele devolve o teto intacto.
+      const usedPx = radiusWithinGap({
+        ceilingPx: Math.min(spot.radius, capRadiusPx),
+        obstaclePx: spot.obstacle,
+        fPx,
+        distance,
+        offsetPx,
+        cloudRatio: CLOUD_MAX_RATIO,
+      });
+
+      if (usedPx < floorRadiusPx) {
         systemsGroup.visible = false;
         return;
       }
       systemsGroup.visible = true;
 
-      const usedPx = Math.min(spot.radius, capRadiusPx);
-      const offsetPx = Math.hypot(spot.x - width / 2, spot.y - height / 2);
       const envelope = envelopeWorldRadius({ usedPx, fPx, distance, offsetPx });
       systemsGroup.scale.setScalar(envelope / ORBIT_RADIUS);
 
