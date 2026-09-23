@@ -2,29 +2,35 @@
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover: sem isso o padding do Hero cai sob a Dynamic Island e o
+         home indicator do iPhone. O Hero compensa com env(safe-area-inset-*) nas
+         classes de padding — ver Hero.jsx. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/x-icon" href="/imagens/favicon.ico" />
 
-    <title>Leandro Sales — Desenvolvedor Front-end</title>
+    <!-- Meta tags fixas em PT: o `<html>` é lang="pt-br" e o PT é o idioma padrão.
+         Elas NÃO acompanham o toggle de idioma — o App.jsx só sincroniza o
+         document.documentElement.lang. Limitação registrada no CLAUDE.md. -->
+    <title>Leandro Sales — Engenheiro de Software Full Stack</title>
     <meta
       name="description"
-      content="Sou especialista em front-end com foco em React, Next.js e TypeScript. Uno a disciplina e foco da formação militar com resultados técnicos em engenharia de software."
+      content="Engenheiro de Software Full Stack com experiência em aplicações web e mobile usando React, Next.js, React Native, TypeScript, Node.js e Python. APIs REST, integrações, fluxos e orquestração de IA com Claude ou Codex."
     />
     <meta name="author" content="Leandro Sales" />
     <meta name="theme-color" content="#050505" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Leandro Sales — Desenvolvedor Front-end" />
+    <meta property="og:title" content="Leandro Sales — Engenheiro de Software Full Stack" />
     <meta
       property="og:description"
-      content="Especialista em front-end com foco em React, Next.js e TypeScript."
+      content="Engenheiro de Software Full Stack: aplicações web e mobile com React, Next.js, React Native, TypeScript, Node.js e Python."
     />
     <meta property="og:image" content="/imagens/Portfolio.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Leandro Sales — Desenvolvedor Front-end" />
+    <meta name="twitter:title" content="Leandro Sales — Engenheiro de Software Full Stack" />
     <meta
       name="twitter:description"
-      content="Especialista em front-end com foco em React, Next.js e TypeScript."
+      content="Engenheiro de Software Full Stack: aplicações web e mobile com React, Next.js, React Native, TypeScript, Node.js e Python."
     />
     <meta name="twitter:image" content="/imagens/Portfolio.png" />
 

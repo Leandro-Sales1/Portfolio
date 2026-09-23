@@ -39,6 +39,11 @@ html {
   scroll-padding-top: 1.5rem;
 }
 
+body {
+  /* Sem isto o toque pinta o retângulo cinza do navegador por cima do card. */
+  -webkit-tap-highlight-color: transparent;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -52,6 +57,22 @@ html {
   .animate-flow,
   .animate-pulse {
     animation: none !important;
+  }
+
+  /* O reveal do spotlight é puramente decorativo: quem pediu redução não o vê.
+     `!important` porque o `.pointer-glow` do JSX carrega `opacity-0` +
+     `group-hover:opacity-100`, e o bloco `@media (hover:hover)` vem DEPOIS deste no
+     CSS gerado (media queries não mudam especificidade, mudam ordem). */
+  .pointer-glow {
+    opacity: 0 !important;
+  }
+
+  /* O tilt/elevação do card é escrito como custom property, mas o `transform` fica
+     no `.card-tilt`: sem isto, um `!important` de folha de estilo não conseguiria
+     alcançar um `transform` inline. */
+  .card-tilt {
+    transform: none !important;
+    transition: none !important;
   }
 }
 
@@ -99,8 +120,13 @@ input[type="range"]::-webkit-slider-thumb {
   transition: transform 0.1s ease, background 0.2s ease;
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
+/* Mesma guarda de ponteiro do variant `hover` do tailwind.config.js. O painel é
+   desktop-only hoje (`hidden lg:flex`), mas a regra crua ficava como a única
+   `:hover` sem guarda do projeto. */
+@media (hover: hover) and (pointer: fine) {
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+  }
 }
 
 input[type="range"]::-webkit-slider-thumb:active {
@@ -157,4 +183,31 @@ input[type="range"]:focus-visible {
     radial-gradient(at 40% 20%, rgba(249, 115, 22, 0.08) 0px, transparent 50%),
     radial-gradient(at 80% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
     radial-gradient(at 0% 50%, rgba(249, 115, 22, 0.05) 0px, transparent 50%);
+}
+
+/* ------------------------------- Hover rico -------------------------------- */
+
+/* Spotlight que segue o cursor. As duas classes abaixo existem porque nenhuma das
+   duas é expressável por utility: gradiente lido de custom property, e `transform`
+   composto só de custom properties.
+   `--mx`/`--my` são escritas por `src/utils/pointerGlow.js` (só em ponteiro de
+   mouse). `--glow` é opcional: o tile de tech passa a cor da marca, os cards usam o
+   `--accent` como fallback. O `color-mix` é o que permite derivar a cor do token sem
+   repetir o hex aqui (era o motivo de o `--accent` do `:root` ser token morto). */
+.pointer-glow {
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--glow, var(--accent)) 14%, transparent),
+    transparent 65%
+  );
+}
+
+/* Tilt + elevação do card de projeto. O `transform` precisa morar aqui, e não num
+   `style` inline, para o `prefers-reduced-motion` acima conseguir zerá-lo — folha de
+   estilo com `!important` não alcança declaração inline de outro jeito. Também
+   resolve o conflito de cascata: um `hover:-translate-y-1` por classe morreria para
+   um `transform` inline. */
+.card-tilt {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))
+    translateY(var(--lift, 0px));
 }

@@ -48,8 +48,13 @@ const Projects = ({ text, isEn }) => {
 
   return (
     <Section id="projetos" eyebrow="03" title={text.projects}>
+      {/* `auto-rows-fr` também no skeleton: sem ele a altura das linhas salta
+          entre o estado "carregando" e o "carregado". */}
       {status === "loading" ? (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+        <div
+          className="grid auto-rows-fr grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          aria-busy="true"
+        >
           {SKELETON_KEYS.map((key) => (
             <div
               key={key}
@@ -67,8 +72,10 @@ const Projects = ({ text, isEn }) => {
         </div>
       ) : null}
 
+      {/* `focus-within`, não `hover`: o card não é clicável; quem recebe foco é o
+          botão de retry, e é isso que precisa ficar visível na moldura. */}
       {status === "error" ? (
-        <div className="flex flex-col items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-8">
+        <div className="flex flex-col items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-8 transition-colors duration-300 ease-out-expo focus-within:border-white/15">
           <p className="text-sm font-light text-zinc-400">{text.projectsError}</p>
           <Button variant="ghost" onClick={() => setAttempt((value) => value + 1)}>
             {text.retry}
@@ -81,7 +88,7 @@ const Projects = ({ text, isEn }) => {
       ) : null}
 
       {status === "ok" && cards.length > 0 ? (
-        <div className="grid auto-rows-fr grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid auto-rows-fr grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {cards.map((card) => (
             <ProjectCard
               key={card.titulo}

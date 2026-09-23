@@ -50,10 +50,20 @@ const HeroCalibration = ({ params, onChange, className = "" }) => {
     onChange({ ...params, [key]: parseFloat(event.target.value) });
 
   return (
+    // `flex flex-col` — a direção é CORREÇÃO DE BUG, não estilo. O template ligava o
+    // painel com `lg:flex` sem direção declarada, e a partir de 1024px ele virava
+    // `flex-direction: row`: barra de título e corpo lado a lado dentro da caixa de
+    // 280px, transbordando a moldura de vidro e sendo cortado pelo `overflow-hidden`
+    // do Hero. (flowforge-saas-1/src/components/Hero.jsx:75, onde o `lg:flex` estava
+    // num wrapper de 3 filhos e a direção row fazia sentido.)
+    //
+    // O `display` agora é declarado aqui, sem `hidden`: quem esconde o painel abaixo de
+    // lg é o wrapper no Hero, que carrega `data-hero-occupied` e por isso precisa medir
+    // 0×0 nessa faixa. Aqui dentro `hidden` e `flex` brigariam por ordem no CSS gerado.
     <div
       role="group"
       aria-label="System Calibration"
-      className={`tech-glass w-[280px] items-center rounded-xl border-white/10 ${className}`}
+      className={`tech-glass flex w-[280px] flex-col rounded-xl border-white/10 ${className}`}
     >
       <div className="flex items-center justify-between rounded-t-xl border-b border-white/5 bg-white/[0.02] px-5 py-3">
         <span className="font-mono text-xs text-zinc-200">System Calibration</span>
@@ -86,10 +96,10 @@ const HeroCalibration = ({ params, onChange, className = "" }) => {
                   aria-label={swatch.label}
                   aria-pressed={isActive}
                   style={{ backgroundColor: swatch.value }}
-                  className={`h-3.5 w-3.5 rounded-full transition-all ${
+                  className={`h-3.5 w-3.5 cursor-pointer rounded-full transition-[box-shadow,transform] duration-200 ease-out-expo focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b] ${
                     isActive
                       ? "ring-1 ring-white/50 ring-offset-2 ring-offset-[#09090b]"
-                      : "hover:ring-1 hover:ring-white/50 hover:ring-offset-2 hover:ring-offset-[#09090b]"
+                      : "hover:scale-110 hover:ring-1 hover:ring-white/50 hover:ring-offset-2 hover:ring-offset-[#09090b]"
                   }`}
                 />
               );

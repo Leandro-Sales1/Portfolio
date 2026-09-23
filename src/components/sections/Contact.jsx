@@ -18,7 +18,10 @@ const Contact = ({ text }) => (
     <div className="grid-overlay pointer-events-none absolute inset-0 opacity-20" />
 
     <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center">
-      <Badge className="mb-6 border-white/10 bg-black/50">
+      {/* `solid` em vez de `className="bg-black/50"`: o fundo do Badge não é
+          sobreponível por className (mesma especificidade, a ordem no CSS gerado
+          decide). Ver o comentário do próprio Badge. */}
+      <Badge solid className="mb-6">
         <FiMail strokeWidth={1.5} className="text-zinc-300" />
         {text.role}
       </Badge>
