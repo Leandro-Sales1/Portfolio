@@ -1,9 +1,46 @@
 {
   "aboutMe": "Sobre mim:",
-  "text": "Sou especialista em front-end com foco em React, Next.js e TypeScript. Uno a disciplina e foco da formação militar com resultados técnicos em engenharia de software. Essa combinação me ensinou a manter a constância mesmo sob pressão e entregando soluções de alta performance, sem abrir mão da colaboração e da qualidade.",
+  "text": "Sou engenheiro de software Full Stack e trabalho de ponta a ponta: interface, back-end, APIs e integrações. No dia a dia isso significa React, Next.js e React Native no front, Node.js, NestJS e Python no servidor, e TypeScript atravessando tudo. Uno a disciplina e o foco da formação militar com resultados técnicos em engenharia de software — o que me ensinou a manter a constância mesmo sob pressão, entregando soluções de alta performance sem abrir mão da colaboração e da qualidade.",
   "techs": "Tecnologias:",
   "projects": "Projetos:",
   "demoButton": "Demonstração",
   "codeButton": "Código",
-  "linkCV": "Leandro_Sales_Desenvolvedor_Fullstack.pdf"
+  "linkCV": "Leandro_Sales_Desenvolvedor_Fullstack.pdf",
+
+  "calibTitle": "Calibração do Sistema",
+  "calibDistortion": "Dinâmica de Fluxo",
+  "calibThreads": "Threads de Processamento",
+  "calibClock": "Taxa de Clock",
+  "calibDensity": "Densidade",
+  "calibEnergy": "Perfil de Energia",
+  "calibColorOrange": "Laranja",
+  "calibColorBlue": "Azul",
+  "calibColorGreen": "Verde",
+
+  "role": "Engenheiro de Software Full Stack",
+  "heroTagline": "Disciplina e performance.",
+  "heroSubline": "Full Stack de ponta a ponta: React, Next.js, React Native, Node.js, Python e TypeScript.",
+  "downloadCV": "Baixar CV",
+
+  "navAbout": "Sobre",
+  "navTechs": "Tecnologias",
+  "navProjects": "Projetos",
+  "navContact": "Contato",
+  "navTitle": "Navegação",
+
+  "projectsLoading": "Carregando projetos…",
+  "projectsError": "Não foi possível carregar os projetos agora.",
+  "projectsEmpty": "Nenhum projeto encontrado.",
+  "retry": "Tentar novamente",
+  "demoTitle": "Ver o projeto em tempo real.",
+
+  "aboutCard1Title": "Formação em andamento",
+  "aboutCard1Text": "Bacharelado em Engenharia de Software pela FIAP, com conclusão prevista para dezembro de 2026.",
+  "aboutCard2Title": "Inglês avançado",
+  "aboutCard2Text": "Certificado pelo Michigan English Test. Trabalho com documentação, código e comunicação técnica em inglês.",
+  "aboutCard3Title": "Full Stack ponta a ponta",
+  "aboutCard3Text": "Front-end web e mobile, back-end, APIs REST e integrações — incluindo fluxos e orquestração de IA com Claude ou Codex.",
+
+  "contactTitle": "Vamos conversar?",
+  "contactSubtitle": "Trabalho de ponta a ponta, do front-end à API, com colaboração e qualidade do início ao fim. Se você tem um projeto ou uma vaga, me chame."
 }

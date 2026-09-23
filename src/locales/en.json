@@ -1,9 +1,46 @@
 {
   "aboutMe": "About me:",
-  "text": "I am a front-end specialist focused on React, Next.js, and TypeScript. I combine the discipline and focus of military training with technical results in software engineering. This combination has taught me to maintain consistency even under pressure, delivering high-performance solutions without compromising collaboration and quality.",
+  "text": "I am a Full Stack software engineer and I work end to end: interface, back end, APIs, and integrations. Day to day that means React, Next.js, and React Native on the front end, Node.js, NestJS, and Python on the server, with TypeScript throughout. I combine the discipline and focus of military training with technical results in software engineering — which taught me to stay consistent even under pressure, delivering high-performance solutions without compromising collaboration and quality.",
   "techs": "Techs:",
   "projects": "Projects:",
   "demoButton": "Demo",
   "codeButton": "Code",
-  "linkCV": "Leandro_Sales_Fullstack_Developer.pdf"
+  "linkCV": "Leandro_Sales_Fullstack_Developer.pdf",
+
+  "calibTitle": "System Calibration",
+  "calibDistortion": "Flux Dynamics",
+  "calibThreads": "Processing Threads",
+  "calibClock": "Clock Rate",
+  "calibDensity": "Density",
+  "calibEnergy": "Energy Profile",
+  "calibColorOrange": "Orange",
+  "calibColorBlue": "Blue",
+  "calibColorGreen": "Green",
+
+  "role": "Full Stack Software Engineer",
+  "heroTagline": "Discipline and performance.",
+  "heroSubline": "Full Stack, end to end: React, Next.js, React Native, Node.js, Python, and TypeScript.",
+  "downloadCV": "Download CV",
+
+  "navAbout": "About",
+  "navTechs": "Techs",
+  "navProjects": "Projects",
+  "navContact": "Contact",
+  "navTitle": "Navigation",
+
+  "projectsLoading": "Loading projects…",
+  "projectsError": "Couldn't load the projects right now.",
+  "projectsEmpty": "No projects found.",
+  "retry": "Try again",
+  "demoTitle": "View the live project.",
+
+  "aboutCard1Title": "Degree in progress",
+  "aboutCard1Text": "Bachelor's degree in Software Engineering at FIAP, expected to graduate in December 2026.",
+  "aboutCard2Title": "Advanced English",
+  "aboutCard2Text": "Certified by the Michigan English Test. I work with documentation, code, and technical communication in English.",
+  "aboutCard3Title": "Full Stack, end to end",
+  "aboutCard3Text": "Web and mobile front end, back end, REST APIs, and integrations — including AI workflows and orchestration with Claude or Codex.",
+
+  "contactTitle": "Let's talk?",
+  "contactSubtitle": "I work end to end, from the front end to the API, with collaboration and quality throughout. If you have a project or a role in mind, get in touch."
 }

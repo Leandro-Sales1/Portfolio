@@ -1,62 +1,52 @@
 import { useEffect, useState } from "react";
-import CardAps from "./components/cardAps/CardAps"
-import Card from "./components/cardProjects/Card"
-import Footer from "./components/footer/Footer"
-import Techs from "./components/cardAps/Techs";
-import pt from "./locales/pt.json";
+import About from "./components/sections/About";
+import Contact from "./components/sections/Contact";
+import Footer from "./components/sections/Footer";
+import Hero from "./components/sections/Hero";
+import Projects from "./components/sections/Projects";
+import TechsGrid from "./components/sections/TechsGrid";
 import en from "./locales/en.json";
-import Bg3D from "./components/backGround/Bg3D";
-import { useViewportDimensions, getViewportWidth } from "./utils/viewport";
+import pt from "./locales/pt.json";
 
+const LANG_KEY = "portfolio:lang";
 
+/**
+ * App é o único dono do estado de idioma — o objeto de locale inteiro desce como
+ * prop `text` (sem `t()`, sem lib, sem context). Trocar isso é uma refatoração
+ * grande; manter o contrato.
+ *
+ * Saiu daqui no redesign: `isMobile`, `useViewportDimensions()` e o <section> com
+ * altura/largura inline vindas de JS. O ThreeCanvas já tem corte interno em
+ * 1024px, o card virou um só, e o layout virou coluna vertical — ninguém mais
+ * consome `isMobile`, então `utils/viewport.js` foi removido junto.
+ */
 const App = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [isEn, setIsEn] = useState(false);
-  const { width: viewportWidth, height: viewportHeight } = useViewportDimensions();
+  // Persistido: antes um reload voltava sempre para PT.
+  const [isEn, setIsEn] = useState(() => localStorage.getItem(LANG_KEY) === "en");
 
+  const text = isEn ? en : pt;
+
+  // O <html lang> nunca acompanhava o idioma — leitor de tela e tradutor ficavam
+  // lendo a página em PT mesmo com o conteúdo em EN.
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(getViewportWidth() < 1024);
-    };
+    document.documentElement.lang = isEn ? "en" : "pt-BR";
+  }, [isEn]);
 
-    handleResize();
-
-    window.addEventListener('resize', handleResize);
-    const vv = window.visualViewport;
-    if (vv) {
-      vv.addEventListener('resize', handleResize);
-    }
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (vv) vv.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  const currentLanguage = isEn ? en : pt
-
+  const handleLangChange = (value) => {
+    setIsEn(value);
+    localStorage.setItem(LANG_KEY, value ? "en" : "pt");
+  };
 
   return (
-    <>
-      <section
-        className="lg:flex h-full bg-gradient-to-b from-[#2C5364] to-[#37373D] overflow-x-hidden"
-        style={{
-          minHeight: viewportHeight,
-          width: viewportWidth || "100%",
-          maxWidth: viewportWidth || "100%",
-        }}
-      >
-        <Bg3D isMobile={isMobile} viewportHeight={viewportHeight} viewportWidth={viewportWidth} />
-        <div className="lg:flex-col lg:w-1/4 min-w-0">
-          <CardAps text={currentLanguage} isEn={isEn} setIsEn={setIsEn} />
-        </div>
-        <div className="lg:flex-col lg:w-3/4 min-w-0 items-end">
-          <Techs text={currentLanguage} />
-          <Card isMobile={isMobile} text={currentLanguage} isEn={isEn} />
-          <Footer />
-        </div>
-      </section>
-    </>
-  )
-}
+    <div className="min-h-screen">
+      <Hero text={text} isEn={isEn} onLangChange={handleLangChange} />
+      <About text={text} />
+      <TechsGrid text={text} />
+      <Projects text={text} isEn={isEn} />
+      <Contact text={text} />
+      <Footer text={text} />
+    </div>
+  );
+};
 
-export default App
+export default App;

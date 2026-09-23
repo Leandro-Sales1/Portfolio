@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Template de referência do redesign (temporário, apagado ao final do port)
+flowforge-saas-1/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
