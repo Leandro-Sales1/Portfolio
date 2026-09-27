@@ -511,12 +511,12 @@ detector acha ali são tinta **congelada da própria nav** (idênticos, pixel a 
 
 No mesmo dia, logo depois dos 110%, o dono: *"adicione também, 1 esfera a cada órbita que «ande» pela
 linha da órbita, e coloque a velocidade dela de acordo com a taxa de clock"*. São três `THREE.Mesh`
-(`SphereGeometry(BEAD_RADIUS = 0,05, 12, 12)` + `MeshBasicMaterial`) **filhas do próprio
+(`SphereGeometry(BEAD_RADIUS = 0,1, 12, 12)` + `MeshBasicMaterial`) **filhas do próprio
 `THREE.Line`** de cada anel: elas herdam a inclinação, e como cada elipse **é** o círculo de raio
 `radius` no plano LOCAL do anel, avançar o ângulo em espaço local é literalmente andar pela linha.
 
-- **Raio LOCAL de `0,05`** (~1/120 do diâmetro do anel de fora), que a escala do grupo transforma em
-  **~5,8px de diâmetro em tela** (0,05 × 0,6855 = 0,0343 de mundo na medição de 2529×1344). É
+- **Raio LOCAL de `0,1`** (era 0,05; dobrou em 2026-09-27, testando 0,06 → 0,07 → 0,1) (~1/60 do diâmetro do anel de fora), que a escala do grupo transforma em
+  **~11,6px de diâmetro em tela** (0,1 × 0,6855 = 0,0686 de mundo na medição de 2529×1344). É
   desenhada no passo **opaco**, antes da nuvem: a nuvem passa na frente dela quando está à frente, e
   o fio cruza por cima — as órbitas continuam sem oclusão (`depthWrite: false`, e entram depois).
 - **A velocidade é do RELÓGIO DO RAF, não do relógio de parede.** `timeRef` (o mesmo que alimenta
@@ -530,12 +530,13 @@ linha da órbita, e coloque a velocidade dela de acordo com a taxa de clock"*. S
   **~5,8s / ~8,7s / ~17,5s** (de fora, do meio, de dentro), **~3,5s / ~5,2s / ~10,5s** no topo do
   slider (0,5) e **~7,0s / ~10,5s / ~21s** no zero — o termo constante do relógio mantém tudo
   andando mesmo com o clock em 0. As três nascem a 120° uma da outra.
-- **`0x71717a` (zinc-500), um degrau acima do fio** (`0x52525b` a 75% ≈ rgb(63,63,69); a bolinha
-  desenha rgb(113,113,122)), e muito abaixo da nuvem (212). A cor **não** vem do `color` do painel:
-  as cores do "Energia" são da nuvem.
+- **A cor é a complementar do perfil de energia** (2026-09-27): nuvem laranja → bolinhas azuis
+  (`#3b82f6`), nuvem azul ou verde → bolinhas laranja (`#f97316`) — os hex dos próprios swatches do
+  painel. No padrão, sem swatch ativo, fica **`0x71717a` (zinc-500), um degrau acima do fio**
+  (`0x52525b` a 75% ≈ rgb(63,63,69)). O mapa é `BEAD_COLOR_BY_PROFILE` no `ThreeCanvas`.
 
-**E ela custa uma conta à guarda.** A casca da bolinha fica em `6,6 + 0,05·escala` de mundo — **0,76%
-além do anel**, ~**+3,2px** em tela nas 2529×1344, medido pela inversa da silhueta (386,5px contra os
+**E ela custa uma conta à guarda.** A casca da bolinha fica em `6,6 + 0,1·escala` de mundo — **1,52%
+além do anel**, ~**+6,4px** em tela nas 2529×1344, medido pela inversa da silhueta (386,5px contra os
 383,4px do anel). O `radiusWithinGap` **não conhece esse raio** (a desigualdade dele é sobre o raio
 da nuvem no extremo do slider, e o anel já a consome inteira): quem absorve é a `marginPx` — 56px ali,
 ≥24px em telas de toque —, com o obstáculo mais próximo a 401,8px. É o **único** elemento da cena que

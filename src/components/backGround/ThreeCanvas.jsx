@@ -147,19 +147,19 @@ const ORBIT_ENVELOPE_RATIO = CLOUD_MAX_RATIO;
  * RAIO LOCAL, E É POR ISSO QUE ELE NÃO É UM NÚMERO EM PX. A bolinha é FILHA do anel, que é filho do
  * `lineGroup` dentro do `systemsGroup` — o grupo que o `adjustLayout` escala por
  * `envelopeWorldRadius(usedPx) / ORBIT_RADIUS`. Logo ela cresce junto com a esfera e com os anéis,
- * em toda tela, sem uma medida a mais. Em tela: o diâmetro dela é ~1/120 do diâmetro do anel
- * (~5,8px no monitor do dono, ∅692). Comparar com um ponto da nuvem é tentador e engana, porque o
+ * em toda tela, sem uma medida a mais. Em tela: o diâmetro dela é ~1/60 do diâmetro do anel
+ * (~11,6px no monitor do dono, ∅692). Comparar com um ponto da nuvem é tentador e engana, porque o
  * `gl_PointSize` do shader é medido em px de FRAMEBUFFER e não acompanha a escala do grupo (fica em
  * ~2px de framebuffer, ~1px de CSS num monitor 2×): no desktop a bolinha é bem maior que um ponto,
- * e no telefone a diferença encolhe (lá ela sai com ~2,6px de CSS). O que importa é que ela se lê.
+ * e no telefone a diferença encolhe (lá ela sai com ~5,2px de CSS). O que importa é que ela se lê.
  *
  * E O QUE ELA ACRESCENTA AO LIMITE É O PRÓPRIO RAIO: o anel de fora é desenhado no teto da guarda
- * (`ORBIT_ENVELOPE_RATIO`) e a bolinha passa dele em `BEAD_RADIUS` — ~3px de tela. Quem absorve isso
+ * (`ORBIT_ENVELOPE_RATIO`) e a bolinha passa dele em `BEAD_RADIUS` — ~6px de tela. Quem absorve isso
  * é o `marginPx`, que fica FORA da envolvente: no mínimo 24px (tela de toque, sem parcela de
- * paralaxe). A folga continua 8× maior que o excesso, então "sem sobreposição" segue garantido — mas
+ * paralaxe). A folga continua ~4× maior que o excesso, então "sem sobreposição" segue garantido — mas
  * é daqui que sai o teto se alguém quiser uma bolinha muito maior.
  */
-const BEAD_RADIUS = 0.05;
+const BEAD_RADIUS = 0.1; // era 0,05: dobrou a pedido do dono em 2026-09-27 (0,06 → 0,07 → 0,1)
 /**
  * Passo angular da bolinha, em radianos por unidade do RELÓGIO do RAF — `timeRef`, o mesmo que
  * alimenta `uTime` e que anda `0,01 + 0,05 · taxa de clock` por QUADRO. A velocidade não é lida em
@@ -175,6 +175,22 @@ const BEAD_RADIUS = 0.05;
  * layout: mexer aqui só muda o passo das bolinhas.
  */
 const BEAD_ANGLE_RATE = 0.2;
+/**
+ * Cor das bolinhas por perfil de energia: a COMPLEMENTAR da nuvem, pedido do dono em 2026-09-27
+ * ("quando a esfera for laranja, elas devem ser azuis, quando a esfera for azul ou verde, elas devem
+ * ser laranjas"). As chaves são os três swatches do `HeroCalibration` — e só eles: a prop `color` só
+ * recebe esses valores ou o padrão `#d4d4d8`, que não é perfil nenhum e mantém o zinc-500 de antes
+ * (um degrau acima do fio, abaixo da nuvem). Os hex são os mesmos dos swatches, então a bolinha
+ * repete a cor de um botão que existe no painel. Se um swatch mudar de hex, mude a chave aqui junto:
+ * cor que não bate cai no fallback, sem erro.
+ */
+const BEAD_COLOR_BY_PROFILE = {
+  "#f97316": "#3b82f6",
+  "#3b82f6": "#f97316",
+  "#10b981": "#f97316",
+};
+const BEAD_COLOR_DEFAULT = "#71717a";
+const beadColorFor = (color) => BEAD_COLOR_BY_PROFILE[color?.toLowerCase()] ?? BEAD_COLOR_DEFAULT;
 
 const vertexShader = `
   uniform float uTime;
@@ -319,6 +335,7 @@ const fragmentShader = `
 const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
   const mountRef = useRef(null);
   const uniformsRef = useRef(null);
+  const beadMaterialRef = useRef(null);
   const speedRef = useRef(speed);
   const timeRef = useRef(0);
 
@@ -336,6 +353,12 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
     // conversão padrão (sRGB→linear) o valor sairia mais escuro que o hex do swatch.
     uniformsRef.current.uColor.value.setStyle(color, THREE.LinearSRGBColorSpace);
   }, [distortion, detail, opacity, color]);
+
+  // Material nativo: aqui a conversão sRGB padrão do `set` é a certa (o three converte de volta na
+  // saída), ao contrário do `uColor` acima.
+  useEffect(() => {
+    beadMaterialRef.current?.color.set(beadColorFor(color));
+  }, [color]);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -448,12 +471,13 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
     // cada quadro. Criados aqui dentro, e não no escopo do módulo, para o cleanup deste efeito
     // descartá-los como descarta o resto (o efeito roda de novo a cada HMR e no StrictMode).
     const beadGeometry = new THREE.SphereGeometry(BEAD_RADIUS, 12, 12);
-    // Um degrau acima do fio: `0x71717a` (zinc-500) contra o `0x52525b` (zinc-600) a 0,75 da linha,
-    // que compõe rgb(63,63,69) sobre o fundo. Um disco CHEIO na mesma cor leria quase igual ao fio,
-    // e a bolinha é justamente o que precisa se ler como algo ANDANDO. Continua bem abaixo da nuvem
-    // (#d4d4d8 está em 212), então não compete com a bola — e não segue a prop `color`: a cor do
-    // painel é do perfil de energia da nuvem, os anéis e as bolinhas são o instrumento.
-    const beadMaterial = new THREE.MeshBasicMaterial({ color: 0x71717a });
+    // A cor segue o perfil de energia pelo lado OPOSTO (`beadColorFor`, no topo do arquivo): nuvem
+    // laranja → bolinhas azuis, nuvem azul ou verde → laranjas. No padrão (#d4d4d8, sem perfil) fica
+    // o zinc-500 de antes, um degrau acima do fio (`0x52525b` a 0,75 ≈ rgb(63,63,69)) — um disco
+    // cheio na cor do fio leria igual a ele, e a bolinha precisa se ler como algo ANDANDO. A cor
+    // inicial vem da prop; as trocas depois do mount vêm do efeito de `color`, via `beadMaterialRef`.
+    const beadMaterial = new THREE.MeshBasicMaterial({ color: beadColorFor(color) });
+    beadMaterialRef.current = beadMaterial;
 
     const createTechOrbit = (radius, rotation) => {
       const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, 2 * Math.PI, false, 0);
@@ -795,6 +819,7 @@ const ThreeCanvas = ({ distortion, detail, speed, opacity, color }) => {
       // Comuns às três bolinhas (ver a criação, acima do `createTechOrbit`).
       beadGeometry.dispose();
       beadMaterial.dispose();
+      beadMaterialRef.current = null;
       // Sem isto o contexto WebGL vaza a cada HMR e a cada double-invoke do
       // StrictMode; depois de ~16 o navegador descarta o mais antigo e o fundo
       // fica preto.
